@@ -1,0 +1,1 @@
+creating AI with Reinforcement Learning to nuzlock Pokemon Radical Red 4.1
