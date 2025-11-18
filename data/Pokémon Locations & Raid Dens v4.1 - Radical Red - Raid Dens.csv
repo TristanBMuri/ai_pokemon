@@ -1,0 +1,687 @@
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,"- In this hack, you will be able to battle Pokémon in Raid Dens. Those Dens are located in many places, and you will encounter different Pokémon depending on the Raid Den.",,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,"- If the Raid Den is active, the Pokémon inside might change every hour. However, after battling the Pokémon inside, even if you lose, the Den will be deactivated. Dens regenerate after you throw a Wishing Piece inside.",,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,"- The difficulty of the Raid Battle depends on the Pokémon inside the Den and the number of Stars shown in the Raid menu, ranging from 1-6 Stars. In select Dens, Legendary Pokémon may appear in 3, 4, 5 or 6-Stars Raids. The level of the Pokémon also depends on the number of Stars.",,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,- The number of Stars that a Raid Den can have depends on your Gym Badge count. The table below shows the possible number of Stars depending on Gym Badge count.,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,1 Gym Badge: ★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,2 Gym Badges: ★ or ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,3 Gym Badges: ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,4 Gym Badges: ★★ or ★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,5 Gym Badges: ★★★ or ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,6 Gym Badges: ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,7 Gym Badges: ★★★★ or ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,8 Gym Badges: ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,
+,,After Entering Hall of Fame: ★★★★★ or ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,, -- ROUTE 3 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Meowth-Galar,,,,,Fletchling,,,,,Nidoran-M,,,,,Capsakid,,,,,Tandemaus,,,
+,,Drops:,,,Rarity,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Oran Berry,,100%,,,Oran Berry,,100%,,,Oran Berry,,100%,,,Oran Berry,,100%,,,Oran Berry,,100%
+,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%
+,,,Muscle Wing,,80%,,,Muscle Wing,,80%,,,Muscle Wing,,80%,,,Muscle Wing,,80%,,,Muscle Wing,,80%
+,,,Chesto Berry,,50%,,,Chesto Berry,,50%,,,Chesto Berry,,50%,,,Chesto Berry,,50%,,—,—,,—
+,,,Coba Berry,,50%,,,Coba Berry,,50%,,,Coba Berry,,50%,,,Coba Berry,,50%,,,Coba Berry,,50%
+,,,Berry Juice,,30%,,,Berry Juice,,30%,,,Berry Juice,,30%,,,Berry Juice,,30%,,,Sitrus Berry,,30%
+,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Protein,,5%,,,Protein,,5%,,,Protein,,5%,,,Protein,,5%,,,Protein,,5%
+,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 4 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Pawmi,,,,,Tatsugiri,,,,,Pansear,,,,,Pansage,,,,,Panpour,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%
+,,,Genius Wing,,80%,,,Genius Wing,,80%,,,Genius Wing,,80%,,,Genius Wing,,80%,,,Genius Wing,,80%
+,,,Chesto Berry,,50%,,,Chesto Berry,,50%,,,Chesto Berry,,50%,,,Chesto Berry,,50%,,,Chesto Berry,,50%
+,,,Colbur Berry,,50%,,,Colbur Berry,,50%,,,Colbur Berry,,50%,,,Colbur Berry,,50%,,,Colbur Berry,,50%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Calcium,,5%,,,Calcium,,5%,,,Calcium,,5%,,,Calcium,,5%,,,Calcium,,5%
+,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- MT. MOON -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Cetoddle,,,,,Cufant,,,,,Lunatone,,,,,Magnemite,,,,,Varoom,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%
+,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%
+,,,Charti Berry,,50%,,,Charti Berry,,50%,,,Charti Berry,,50%,,,Charti Berry,,50%,,,Charti Berry,,50%
+,,,Swift Wing,,50%,,,Swift Wing,,50%,,,Swift Wing,,50%,,,Swift Wing,,50%,,,Swift Wing,,50%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Moon Stone,,30%,,,Moon Stone,,30%,,,Moon Stone,,30%,,,Moon Stone,,30%,,,Moon Stone,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%
+,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 24 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Shroodle,,,,,Abra,,,,,Charcadet,,,,,Applin,,,,,Lotad,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%
+,,,Health Wing,,80%,,,Health Wing,,80%,,,Health Wing,,80%,,,Health Wing,,80%,,,Health Wing,,80%
+,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Passho Berry,,30%,,,Passho Berry,,30%,,,Passho Berry,,30%,,,Passho Berry,,30%,,,Passho Berry,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Nugget,,25%,,,Nugget,,25%,,,Nugget,,25%,,,Nugget,,25%,,,Nugget,,25%
+,,,HP Up,,5%,,,HP Up,,5%,,,HP Up,,5%,,,HP Up,,5%,,,HP Up,,5%
+,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 25 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Tadbulb,,,,,Psyduck,,,,,Klawf,,,,,Milcery,,,,,Clauncher,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%
+,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%
+,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Tanga Berry,,30%,,,Tanga Berry,,30%,,,Tanga Berry,,30%,,,Tanga Berry,,30%,,,Tanga Berry,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Nugget,,25%,,,Nugget,,25%,,,Nugget,,25%,,,Nugget,,25%,,,Nugget,,25%
+,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%
+,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 5 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Hatenna,,,,,Flamigo,,,,,Flittle,,,,,Rhyhorn,,,,,Oricorio,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%
+,,,Resist Wing,,80%,,,Resist Wing,,80%,,,Resist Wing,,80%,,,Resist Wing,,80%,,,Resist Wing,,80%
+,,,Wacan Berry,,50%,,,Wacan Berry,,50%,,,Wacan Berry,,50%,,,Wacan Berry,,50%,,,Wacan Berry,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Iron,,5%,,,Iron,,5%,,,Iron,,5%,,,Iron,,5%,,,Iron,,5%
+,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 6 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Applin,,,,,Litleo,,,,,Mienfoo,,,,,Blitzle,,,,,Squawkabilly-G,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Haban Berry,,80%,,,Haban Berry,,80%,,,Haban Berry,,80%,,,Haban Berry,,80%,,,Haban Berry,,80%
+,,,Clever Wing,,80%,,,Clever Wing,,80%,,,Clever Wing,,80%,,,Clever Wing,,80%,,,Clever Wing,,80%
+,,,Chilan Berry,,50%,,,Chilan Berry,,50%,,,Chilan Berry,,50%,,,Chilan Berry,,50%,,,Chilan Berry,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Zinc,,5%,,,Zinc,,5%,,,Zinc,,5%,,,Zinc,,5%,,,Zinc,,5%
+,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 11 -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Scraggy,,,,,Veluza,,,,,Drowzee,,,,,Misdreavus,,,,,Swadloon,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Chilan Berry,,80%,,,Chilan Berry,,80%,,,Chilan Berry,,80%,,,Chilan Berry,,80%,,,Chilan Berry,,80%
+,,,Clever Wing,,80%,,,Clever Wing,,80%,,,Clever Wing,,80%,,,Clever Wing,,80%,,,Clever Wing,,80%
+,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%
+,,,Roseli Berry,,50%,,,Roseli Berry,,50%,,,Roseli Berry,,50%,,,Roseli Berry,,50%,,,Roseli Berry,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Ability Capsule,,30%,,,Ability Capsule,,30%,,,Ability Capsule,,30%,,,Ability Capsule,,30%,,,Ability Capsule,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Calcium,,5%,,,Calcium,,5%,,,Calcium,,5%,,,Calcium,,5%,,,Calcium,,5%
+,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- DIGLETT CAVE -- ★,,,,,,,,,,,,,,,,,,,,,,,
+,,Gligar,,,,,Sandile,,,,,Stonjourner,,,,,Misdreavus,,,,,Klink,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Great Ball,,80%,,,Great Ball,,80%,,,Great Ball,,80%,,,Great Ball,,80%,,,Great Ball,,80%
+,,,Star Piece,,80%,,,Star Piece,,80%,,,Star Piece,,80%,,,Star Piece,,80%,,,Star Piece,,80%
+,,,Yellow Shard,,50%,,,Green Shard,,50%,,,Red Shard,,50%,,,Yellow Shard,,50%,,,Blue Shard,,50%
+,,,Shuca Berry,,50%,,,Shuca Berry,,50%,,,Shuca Berry,,50%,,,Shuca Berry,,50%,,,Shuca Berry,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%
+,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%
+,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%
+,,,Dream Patch,,1%,,,Dream Patch,,1%,,,Dream Patch,,1%,,,Dream Patch,,1%,,,Dream Patch,,1%
+,, -- ROUTE 2 -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Pinsir,,,,,Koffing,,,,,Impidimp,,,,,Shellos-East,,,,,Spritzee,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%
+,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%
+,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%
+,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 9 -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Shelmet,,,,,Electrode-Hisui,,,,,Falinks,,,,,Turtonator,,,,,Tangela,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%
+,,,Chople Berry,,80%,,,Chople Berry,,80%,,,Chople Berry,,80%,,,Chople Berry,,80%,,,Chople Berry,,80%
+,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%
+,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,Chesto Berry,,25%,,,Chesto Berry,,25%,,,Chesto Berry,,25%,,,Chesto Berry,,25%,,,Chesto Berry,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%
+,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%,,,Dream Patch,,4%
+,,,Dream Patch,,1%,,,Dream Patch,,1%,,,Dream Patch,,1%,,,Dream Patch,,1%,,,Dream Patch,,1%
+,, -- ROUTE 10 -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Zorua-Hisui,,,,,Zorua,,,,,Eevee,,,,,Heracross,,,,,Toxel,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%
+,,,Kasib Berry,,80%,,,Kasib Berry,,80%,,,Kasib Berry,,80%,,,Kasib Berry,,80%,,,Kasib Berry,,80%
+,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%,,,Yellow Shard,,50%
+,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROCK TUNNEL -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Delibird,,,,,Tinkatuff,,,,,Ferroseed,,,,,Sandshrew-Alola,,,,,Orthworm,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%,,,Quick Ball,,100%
+,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%
+,,,Babiri Berry,,80%,,,Babiri Berry,,80%,,,Babiri Berry,,80%,,,Babiri Berry,,80%,,,Babiri Berry,,80%
+,,,Yellow Shard,,50%,,,Red Shard,,50%,,,Red Shard,,50%,,,Blue Shard,,50%,,,Green Shard,,50%
+,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%,,,Ability Capsule,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%,,,PP Up,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 16 -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Porygon,,,,,Passimian,,,,,Oranguru,,,,,Cramorant,,,,,Kleavor,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%
+,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%
+,,,Payapa Berry,,80%,,,Payapa Berry,,80%,,,Payapa Berry,,80%,,,Payapa Berry,,80%,,,Payapa Berry,,80%
+,,,Blue Shard,,50%,,,Green Shard,,50%,,,Yellow Shard,,50%,,,Red Shard,,50%,,,Blue Shard,,50%
+,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 8 -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Venipede,,,,,Girafarig,,,,,Yanma,,,,,Drampa,,,,,Basculegion,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%
+,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%
+,,,Rindo Berry,,80%,,,Rindo Berry,,80%,,,Rindo Berry,,80%,,,Rindo Berry,,80%,,,Rindo Berry,,80%
+,,,Blue Shard,,50%,,,Red Shard,,50%,,,Yellow Shard,,50%,,,Blue Shard,,50%,,,Green Shard,,50%
+,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%,,,Star Piece,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 12 -- ★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Corsola-Galar,,,,,Slowpoke-Galar,,,,,Sliggoo-Hisui,,,,,Luvdisc,,,,,Tauros,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%,,,Stardust,,100%
+,,,Dive Ball,,80%,,,Dive Ball,,80%,,,Dive Ball,,80%,,,Dive Ball,,80%,,,Dive Ball,,80%
+,,,Star Piece,,80%,,,Star Piece,,80%,,,Star Piece,,80%,,,Star Piece,,80%,,,Star Piece,,80%
+,,,Blue Shard,,50%,,,Blue Shard,,50%,,,Blue Shard,,50%,,,Blue Shard,,50%,,,Blue Shard,,50%
+,,,Yache Berry,,50%,,,Yache Berry,,50%,,,Yache Berry,,50%,,,Yache Berry,,50%,,,Yache Berry,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%,,,Wishing Piece,,30%
+,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- VIRIDIAN FOREST -- ★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Gourgeist-Su,,,,,Golurk,,,,,Granbull,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,,,
+,,,,,,,,Salac Berry,,30%,,,Salac Berry,,30%,,,Salac Berry,,30%,,,,,
+,,,,,,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,,,
+,,,,,,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,,,
+,,,,,,,,Dream Patch,,25%,,,Dream Patch,,25%,,,Dream Patch,,25%,,,,,
+,,,,,,,,PP Max,,5%,,,PP Max,,5%,,,PP Max,,5%,,,,,
+,,,,,,,,PP Max,,4%,,,PP Max,,4%,,,PP Max,,4%,,,,,
+,,,,,,,,PP Max,,1%,,,PP Max,,1%,,,PP Max,,1%,,,,,
+,, -- ROUTE 13 -- ★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Indeedee,,,,,Duraludon,,,,,Qwilfish-Hisui,,,,,Breloom,,,,,Torkoal,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%
+,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%,,,Dusk Ball,,80%
+,,,Protein,,80%,,,Protein,,80%,,,Protein,,80%,,,Protein,,80%,,,Protein,,80%
+,,,Muscle Wing,,50%,,,Muscle Wing,,50%,,,Muscle Wing,,50%,,,Muscle Wing,,50%,,,Muscle Wing,,50%
+,,,Kebia Berry,,50%,,,Kebia Berry,,50%,,,Kebia Berry,,50%,,,Kebia Berry,,50%,,,Kebia Berry,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Liechi Berry,,30%,,,Liechi Berry,,30%,,,Liechi Berry,,30%,,,Liechi Berry,,30%,,,Liechi Berry,,30%
+,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- MT. MOON -- ★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Regirock,,,,,Registeel,,,,,Regice,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Swift Wing,,80%,,,Swift Wing,,80%,,,Swift Wing,,80%,,,,,
+,,,,,,,,Stardust,,80%,,,Stardust,,80%,,,Stardust,,80%,,,,,
+,,,,,,,,Charti Berry,,50%,,,Charti Berry,,50%,,,Charti Berry,,50%,,,,,
+,,,,,,,,Swift Wing,,50%,,,Swift Wing,,50%,,,Swift Wing,,50%,,,,,
+,,,,,,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,Sitrus Berry,,30%,,,,,
+,,,,,,,,Moon Stone,,30%,,,Moon Stone,,30%,,,Moon Stone,,30%,,,,,
+,,,,,,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Carbos,,5%,,,Carbos,,5%,,,Carbos,,5%,,,,,
+,,,,,,,,PP Up,,4%,,,PP Up,,4%,,,PP Up,,4%,,,,,
+,,,,,,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,,,
+,, -- ROUTE 14 -- ★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Pelipper,,,,,Amoonguss,,,,,Sneasel-Hisui,,,,,Dedenne,,,,,Weezing-Galar,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%
+,,,Quick Ball,,80%,,,Quick Ball,,80%,,,Quick Ball,,80%,,,Quick Ball,,80%,,,Quick Ball,,80%
+,,,Genius Wing,,80%,,,Genius Wing,,80%,,,Genius Wing,,80%,,,Genius Wing,,80%,,,Genius Wing,,80%
+,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Petaya Berry,,30%,,,Petaya Berry,,30%,,,Petaya Berry,,30%,,,Petaya Berry,,30%,,,Petaya Berry,,30%
+,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- ROUTE 15 -- ★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Sigilyph,,,,,Exploud,,,,,Dusclops,,,,,Persian-Alola,,,,,Pincurchin,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%
+,,,Quick Ball,,80%,,,Quick Ball,,80%,,,Quick Ball,,80%,,,Quick Ball,,80%,,,Quick Ball,,80%
+,,,Health Wing,,80%,,,Health Wing,,80%,,,Health Wing,,80%,,,Health Wing,,80%,,,Health Wing,,80%
+,,,HP Up,,50%,,,HP Up,,50%,,,HP Up,,50%,,,HP Up,,50%,,,HP Up,,50%
+,,,Nugget,,50%,,,Nugget,,50%,,,Nugget,,50%,,,Nugget,,50%,,,Nugget,,50%
+,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%,,,Nugget,,30%
+,,,Salac Berry,,30%,,,Salac Berry,,30%,,,Salac Berry,,30%,,,Salac Berry,,30%,,,Salac Berry,,30%
+,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%,,,PP Up,,25%
+,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%,,,Dream Ball,,25%
+,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%,,,Big Nugget,,5%
+,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%
+,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%
+,, -- POKEMON MANSION -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Floatzel,,,,,Magcargo,,,,,Noctowl,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Liechi Berry,,25%,,,Liechi Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,,,
+,,,,,,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,,,
+,, -- ROUTE 2 -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Entei,,,,,Suicune,,,,,Raikou,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Salac Berry,,25%,,,Salac Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- ROUTE 16 -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Zygarde-10,,,,,Diancie,,,,,Pecharunt,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Protein,,50%,,,Protein,,50%,,,Protein,,50%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Star Piece,,25%,,,Star Piece,,25%,,,,,
+,,,,,,,,Dream Patch,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,,,
+,,,,,,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,,,
+,, -- ROUTE 10 -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Azelf,,,,,Mesprit,,,,,Uxie,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Salac Berry,,25%,,,Salac Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- ROUTE 25 -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Necrozma,,,,,Calyrex,,,,,Celebi,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Liechi Berry,,25%,,,Liechi Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- SAFARI ZONE FAR-WESTERN AREA -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Munkidori,,,,,Fezandipiti,,,,,Okidogi,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Liechi Berry,,25%,,,Liechi Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- POWER PLANT -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Dracozolt,,,,,Arctozolt,,,,,Heliolisk,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Protein,,50%,,,Protein,,50%,,,Protein,,50%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Star Piece,,25%,,,Star Piece,,25%,,,,,
+,,,,,,,,Dream Patch,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,,,
+,,,,,,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,,,
+,, -- SEAFOAM ISLANDS -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Dracovish,,,,,Arctovish,,,,,Basculegion,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,Carbos,,50%,,,Carbos,,50%,,,Carbos,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Star Piece,,25%,,,Star Piece,,25%,,,Star Piece,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,Lucky Egg,,4%,,,,,
+,,,,,,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,Lucky Egg,,1%,,,,,
+,, -- CERULEAN CAVE -- ★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Xurkitree,,,,,Stakataka,,,,,Guzzlord,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Calcium,,80%,,,Calcium,,80%,,,Calcium,,80%,,,,,
+,,,,,,,,Carbos,,50%,,,Carbos,,50%,,,Carbos,,50%,,,,,
+,,,,,,,,Stardust,,50%,,,Stardust,,50%,,,Stardust,,50%,,,,,
+,,,,,,,,Star Piece,,30%,,,Star Piece,,30%,,,Star Piece,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Beast Ball,,25%,,,Beast Ball,,25%,,,Beast Ball,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Lucky Egg,,25%,,,,,
+,,,,,,,,Power Herb,,5%,,,Power Herb,,5%,,,Wishing Piece,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- ROUTE 13 -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Victini,,,,,Volcanion,,,,,Cresselia,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Liechi Berry,,25%,,,Liechi Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- VIRIDIAN FOREST -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Flutter Mane,,,,,Zarude,,,,,Shaymin,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Nugget,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,,,
+,,,,,,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,,,
+,,,,,,,,Salac Berry,,30%,,,Salac Berry,,30%,,,Salac Berry,,30%,,,,,
+,,,,,,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,,,
+,,,,,,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,,,
+,,,,,,,,PP Max,,25%,,,PP Max,,25%,,,PP Max,,25%,,,,,
+,,,,,,,,PP Max,,5%,,,PP Max,,5%,,,PP Max,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,PP Max,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,PP Max,,1%,,,Life Orb,,1%,,,,,
+,, -- ROCK TUNNEL -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Iron Boulder,,,,,Iron Leaves,,,,,Iron Crown,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Nugget,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,Ultra Ball,,80%,,,,,
+,,,,,,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,Wishing Piece,,50%,,,,,
+,,,,,,,,Salac Berry,,30%,,,Salac Berry,,30%,,,Salac Berry,,30%,,,,,
+,,,,,,,,Heal Ball,,30%,,,Heal Ball,,30%,,,Heal Ball,,30%,,,,,
+,,,,,,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,Leppa Berry,,25%,,,,,
+,,,,,,,,PP Max,,25%,,,PP Max,,25%,,,PP Max,,25%,,,,,
+,,,,,,,,PP Max,,5%,,,PP Max,,5%,,,PP Max,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- POKEMON MANSION -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Spectrier,,,,,Hoopa,,,,,Regidrago,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Occa Berry,,50%,,,Occa Berry,,50%,,,Occa Berry,,50%,,,,,
+,,,,,,,,Dream Patch,,50%,,,Dream Patch,,50%,,,Dream Patch,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Salac Berry,,25%,,,Liechi Berry,,25%,,,Liechi Berry,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- POWER PLANT -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Zeraora,,,,,Iron Valiant,,,,,Regieleki,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Nugget,,100%,,,Nugget,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Protein,,80%,,,Protein,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Protein,,50%,,,,,
+,,,,,,,,Carbos,,50%,,,Carbos,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Star Piece,,25%,,,Wishing Piece,,25%,,,Dream Patch,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Dream Patch,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- SEAFOAM ISLANDS -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Dracovish,,,,,Arctovish,,,,,Glastrier,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Nugget,,100%,,,Nugget,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Protein,,80%,,,Protein,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Protein,,50%,,,,,
+,,,,,,,,Carbos,,50%,,,Carbos,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Star Piece,,25%,,,Star Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Star Piece,,25%,,,,,
+,,,,,,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,PP Max,,4%,,,PP Max,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,PP Max,,1%,,,PP Max,,1%,,,,,
+,, -- CERULEAN CAVE -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Buzzwole,,,,,Xurkitree,,,,,Stakataka,,,,,Guzzlord,,,,,Nihilego,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%
+,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%
+,,,Calcium,,80%,,,Calcium,,80%,,,Calcium,,80%,,,Calcium,,80%,,,Calcium,,80%
+,,,Carbos,,50%,,,Carbos,,50%,,,Carbos,,50%,,,Carbos,,50%,,,Carbos,,50%
+,,,Stardust,,50%,,,Stardust,,50%,,,Stardust,,50%,,,Stardust,,50%,,,Stardust,,50%
+,,,Star Piece,,30%,,,Star Piece,,30%,,,Star Piece,,30%,,,Star Piece,,30%,,,Star Piece,,30%
+,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%
+,,,Beast Ball,,25%,,,Beast Ball,,25%,,,Beast Ball,,25%,,,Beast Ball,,25%,,,Beast Ball,,25%
+,,,Power Herb,,25%,,,Power Herb,,25%,,,Power Herb,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%
+,,,Wishing Piece,,5%,,,Wishing Piece,,5%,,,Wishing Piece,,5%,,,Lucky Egg,,5%,,,Lucky Egg,,5%
+,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%
+,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%
+,, -- VICTORY ROAD -- ★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Meloetta,,,,,Genesect,,,,,Jirachi,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Star Piece,,100%,,,Star Piece,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Nugget,,80%,,,Nugget,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Protein,,50%,,,Protein,,50%,,,Protein,,50%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Rocky Helmet,,25%,,,Rocky Helmet,,25%,,,Rocky Helmet,,25%,,,,,
+,,,,,,,,Eviolite,,5%,,,Eviolite,,5%,,,Eviolite,,5%,,,,,
+,,,,,,,,Life Orb,,4%,,,Life Orb,,4%,,,Life Orb,,4%,,,,,
+,,,,,,,,Life Orb,,1%,,,Life Orb,,1%,,,Life Orb,,1%,,,,,
+,, -- VIRIDIAN FOREST -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,Tapu Bulu,,,,,,,,,,,,,
+,,,,,,,,,,,,Drops:,,,%,,,,,,,,,,
+,,,,,,,,,,,,,Star Piece,,100%,,,,,,,,,,
+,,,,,,,,,,,,,Big Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Ultra Ball,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Wishing Piece,,50%,,,,,,,,,,
+,,,,,,,,,,,,,Salac Berry,,30%,,,,,,,,,,
+,,,,,,,,,,,,,Heal Ball,,30%,,,,,,,,,,
+,,,,,,,,,,,,,Leppa Berry,,25%,,,,,,,,,,
+,,,,,,,,,,,,,PP Max,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Eviolite,,5%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Scarf,,4%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Scarf,,1%,,,,,,,,,,
+,, -- MT. MOON -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,Regigigas,,,,,,,,,,,,,
+,,,,,,,,,,,,Drops:,,,%,,,,,,,,,,
+,,,,,,,,,,,,,Star Piece,,100%,,,,,,,,,,
+,,,,,,,,,,,,,Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Big Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Protein,,50%,,,,,,,,,,
+,,,,,,,,,,,,,Calcium,,50%,,,,,,,,,,
+,,,,,,,,,,,,,PP Up,,30%,,,,,,,,,,
+,,,,,,,,,,,,,PP Max,,30%,,,,,,,,,,
+,,,,,,,,,,,,,Wishing Piece,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Rocky Helmet,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Eviolite,,5%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Band,,4%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Band,,1%,,,,,,,,,,
+,, -- POKEMON MANSION -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,Tapu Lele,,,,,,,,,,,,,
+,,,,,,,,,,,,Drops:,,,%,,,,,,,,,,
+,,,,,,,,,,,,,Star Piece,,100%,,,,,,,,,,
+,,,,,,,,,,,,,Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Big Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Occa Berry,,50%,,,,,,,,,,
+,,,,,,,,,,,,,Dream Patch,,50%,,,,,,,,,,
+,,,,,,,,,,,,,PP Up,,30%,,,,,,,,,,
+,,,,,,,,,,,,,PP Max,,30%,,,,,,,,,,
+,,,,,,,,,,,,,Liechi Berry,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Wishing Piece,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Eviolite,,5%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Band,,4%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Band,,1%,,,,,,,,,,
+,, -- POWER PLANT -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,Tapu Koko,,,,,,,,,,,,,
+,,,,,,,,,,,,Drops:,,,%,,,,,,,,,,
+,,,,,,,,,,,,,Nugget,,100%,,,,,,,,,,
+,,,,,,,,,,,,,Protein,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Big Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Calcium,,50%,,,,,,,,,,
+,,,,,,,,,,,,,Carbos,,50%,,,,,,,,,,
+,,,,,,,,,,,,,PP Up,,30%,,,,,,,,,,
+,,,,,,,,,,,,,PP Max,,30%,,,,,,,,,,
+,,,,,,,,,,,,,Star Piece,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Wishing Piece,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Eviolite,,5%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Specs,,4%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Specs,,1%,,,,,,,,,,
+,, -- SEAFOAM ISLANDS -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,Kyurem,,,,,Tapu Fini,,,,,Manaphy,,,,,,,,
+,,,,,,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,,,,
+,,,,,,,,Nugget,,100%,,,Nugget,,100%,,,Star Piece,,100%,,,,,
+,,,,,,,,Protein,,80%,,,Protein,,80%,,,Nugget,,80%,,,,,
+,,,,,,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,,,
+,,,,,,,,Calcium,,50%,,,Calcium,,50%,,,Protein,,50%,,,,,
+,,,,,,,,Carbos,,50%,,,Carbos,,50%,,,Calcium,,50%,,,,,
+,,,,,,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,,,
+,,,,,,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,,,
+,,,,,,,,Star Piece,,25%,,,Star Piece,,25%,,,Wishing Piece,,25%,,,,,
+,,,,,,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,Rocky Helmet,,25%,,,,,
+,,,,,,,,Eviolite,,5%,,,Eviolite,,5%,,,Eviolite,,5%,,,,,
+,,,,,,,,Choice Scarf,,4%,,,Choice Band,,4%,,,Choice Scarf,,4%,,,,,
+,,,,,,,,Choice Scarf,,1%,,,Choice Band,,1%,,,Choice Scarf,,1%,,,,,
+,, -- CERULEAN CAVE -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,Blacephalon,,,,,Kartana,,,,,Poipole,,,,,Pheromosa,,,,,Celesteela,,,
+,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%,,Drops:,,,%
+,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%,,,Nugget,,100%
+,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%
+,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%,,,Big Nugget,,80%
+,,--,--,,--,,--,--,,--,,,Big Nugget,,50%,,--,--,,--,,--,--,,--
+,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%,,,PP Up,,30%
+,,,PP Max,,30%,,,PP Max,,30%,,,PP Max,,30%,,,Nugget,,30%,,,PP Max,,30%
+,,,Wishing Piece,,25%,,,Wishing Piece,,25%,,,PP Up,,25%,,,PP Max,,25%,,,Wishing Piece,,25%
+,,,Power Herb,,25%,,,Power Herb,,25%,,,Power Herb,,25%,,,White Herb,,25%,,,White Herb,,25%
+,,,Eviolite,,5%,,,Eviolite,,5%,,,Eviolite,,5%,,,Eviolite,,5%,,,Eviolite,,5%
+,,,Choice Scarf,,4%,,,Choice Band,,4%,,,Life Orb,,4%,,,Choice Scarf,,4%,,,Choice Specs,,4%
+,,,Choice Scarf,,1%,,,Choice Band,,1%,,,Life Orb,,1%,,,Choice Scarf,,1%,,,Choice Specs,,1%
+,, -- VICTORY ROAD -- ★★★★★★,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,Zygarde,,,,,,,,,,,,,
+,,,,,,,,,,,,Drops:,,,%,,,,,,,,,,
+,,,,,,,,,,,,,Star Piece,,100%,,,,,,,,,,
+,,,,,,,,,,,,,Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Big Nugget,,80%,,,,,,,,,,
+,,,,,,,,,,,,,Protein,,50%,,,,,,,,,,
+,,,,,,,,,,,,,Calcium,,50%,,,,,,,,,,
+,,,,,,,,,,,,,PP Up,,30%,,,,,,,,,,
+,,,,,,,,,,,,,PP Max,,30%,,,,,,,,,,
+,,,,,,,,,,,,,Wishing Piece,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Rocky Helmet,,25%,,,,,,,,,,
+,,,,,,,,,,,,,Eviolite,,5%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Band,,4%,,,,,,,,,,
+,,,,,,,,,,,,,Choice Band,,1%,,,,,,,,,,
