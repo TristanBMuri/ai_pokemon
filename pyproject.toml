@@ -10,4 +10,5 @@ dependencies = [
     "pydantic>=2.12.4",
     "stable-baselines3>=2.7.0",
     "tensorboard>=2.20.0",
+    "poke-env>=0.6.0",
 ]

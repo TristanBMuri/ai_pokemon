@@ -430,13 +430,13 @@ This allows us to study:
 
 ### v0.2 – Showdown Integration & Battle Policy
 
-* [ ] Set up a local Pokémon Showdown server.
-* [ ] Integrate **poke-env** and create a `BattleEnv` with:
+* [x] Set up a local Pokémon Showdown server.
+* [x] Integrate **poke-env** and create a `BattleEnv` with:
 
   * Fixed format (e.g. gen X singles).
   * Small pool of Pokémon and trainer teams.
-* [ ] Train a battle policy (e.g. PPO) to a reasonable level.
-* [ ] Implement `simulate_battle` using the trained battle policy and return win/loss + per-mon survival.
+* [x] Train a battle policy (e.g. PPO) to a reasonable level.
+* [x] Implement `simulate_battle` using the trained battle policy and return win/loss + per-mon survival.
 
 ### v0.3 – Full Nuzlocke Gauntlet RL (Fixed Movesets)
 
