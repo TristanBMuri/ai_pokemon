@@ -1,0 +1,116 @@
+Initializing RealBattleSimulator with model: models/ppo_risk_agent_v1...
+Loading model from models/ppo_risk_agent_v1...
+/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/on_policy_algorithm.py:150: UserWarning: You are trying to run PPO on the GPU, but it is primarily intended to run on the CPU when not using a CNN policy (you are using ActorCriticPolicy which should be a MlpPolicy). See https://github.com/DLR-RM/stable-baselines3/issues/1245 for more info. You can pass `device='cpu'` or `export CUDA_VISIBLE_DEVICES=` to force using the CPU.Note: The model will train, but the GPU utilization will be poor and the training might take longer than on CPU.
+  warnings.warn(
+Model loaded.
+Initializing NuzlockeGauntletEnv...
+Initializing PPO Manager Agent...
+Using cuda device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+Loading existing manager model from models/ppo_manager_v1...
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+Starting training for 10 steps...
+Logging to ./tmp/manager/PPO_2
+DEBUG: My Team:
+Charizard
+Level: 50
+- Flamethrower
+- Dragon Claw
+
+Blastoise
+Level: 50
+- Surf
+- Ice Beam
+
+Pikachu
+Level: 45
+- Thunderbolt
+DEBUG: Enemy Team:
+Geodude-A @ Custap Berry
+Level: 50
+Ability: Sturdy
+Nature: Adamant
+- Bulldoze
+- Rock Tomb
+- Spark
+- Self-Destruct
+
+Varoom @ Air Balloon
+Level: 50
+Ability: Filter
+Nature: Brave
+- Gyro Ball
+- Bulldoze
+- Toxic
+- Protect
+
+Onix @ Berry Juice
+Level: 50
+Ability: Sturdy
+Nature: Bashful
+- Rock Tomb
+- Bulldoze
+- Sleep Talk
+
+Archen @ Berry Juice
+Level: 50
+Ability: Defeatist
+Nature: Jolly
+- Pluck
+- Rock Tomb
+- Bulldoze
+- Facade
+Saving manager model to models/ppo_manager_v1...
+Model saved.
+Traceback (most recent call last):
+  File "/home/tristan/CodingProjects/ai_pokemon/train_manager.py", line 53, in <module>
+    train_manager(args.steps, args.model, args.battle_model)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/train_manager.py", line 33, in train_manager
+    model.learn(total_timesteps=steps, progress_bar=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/ppo/ppo.py", line 311, in learn
+    return super().learn(
+           ~~~~~~~~~~~~~^
+        total_timesteps=total_timesteps,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        progress_bar=progress_bar,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/on_policy_algorithm.py", line 324, in learn
+    continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps)
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/on_policy_algorithm.py", line 218, in collect_rollouts
+    new_obs, rewards, dones, infos = env.step(clipped_actions)
+                                     ~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 222, in step
+    return self.step_wait()
+           ~~~~~~~~~~~~~~^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 59, in step_wait
+    obs, self.buf_rews[env_idx], terminated, truncated, self.buf_infos[env_idx] = self.envs[env_idx].step(  # type: ignore[assignment]
+                                                                                  ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.actions[env_idx]
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/monitor.py", line 94, in step
+    observation, reward, terminated, truncated, info = self.env.step(action)
+                                                       ~~~~~~~~~~~~~^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/nuzlocke_gauntlet_rl/envs/nuzlocke_env.py", line 87, in step
+    win, survivors = self.simulator.simulate_battle(party_specs, current_trainer.team, risk_token=risk_token)
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/nuzlocke_gauntlet_rl/envs/real_battle_simulator.py", line 80, in simulate_battle
+    obs, info = self.env.reset(options={"risk_token": risk_token})
+                ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/poke_env/environment/single_agent_wrapper.py", line 44, in reset
+    obs, infos = self.env.reset(seed, options)
+                 ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/nuzlocke_gauntlet_rl/envs/battle_env.py", line 45, in reset
+    return super().reset(seed=seed, options=options)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/poke_env/environment/env.py", line 334, in reset
+    raise RuntimeError("Agent is not challenging")
+RuntimeError: Agent is not challenging

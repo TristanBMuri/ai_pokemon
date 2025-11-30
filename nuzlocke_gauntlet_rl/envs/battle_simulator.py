@@ -6,7 +6,7 @@ class BattleSimulator(ABC):
     """Abstract interface for running battles."""
     
     @abstractmethod
-    def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec]) -> Tuple[bool, List[bool]]:
+    def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec], risk_token: int = 0) -> Tuple[bool, List[bool]]:
         """
         Simulates a battle.
         

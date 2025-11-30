@@ -28,13 +28,9 @@ class NuzlockeGauntletEnv(gym.Env):
         self.current_trainer_idx = 0
         
         # Action Space:
-        # For now, simplified: Select top N mons from roster to form a party.
-        # We'll just use Discrete(1) for "Go with current top 6" to start, 
-        # but really we want to select a subset.
-        # Let's make it Discrete(2): 
-        # 0: Fight with current party (first 6 alive)
-        # 1: Swap first box mon with last party mon (naive box management)
-        self.action_space = spaces.Discrete(2)
+        # [0]: Roster Action (0=Battle, 1=Swap)
+        # [1]: Risk Token (0=Safe, 1=Neutral, 2=Desperate)
+        self.action_space = spaces.MultiDiscrete([2, 3])
         
         # Observation Space:
         # Simplified for prototype:
@@ -54,35 +50,49 @@ class NuzlockeGauntletEnv(gym.Env):
         
         # Initialize starter roster (e.g. 3 random mons level 50)
         self.roster = [
-            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Starter1", level=50, moves=[]), current_hp=100, in_party=True),
-            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Starter2", level=50, moves=[]), current_hp=100, in_party=True),
-            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Starter3", level=50, moves=[]), current_hp=100, in_party=True),
-            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Box1", level=45, moves=[]), current_hp=100, in_party=False)
+            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Charizard", level=50, moves=["Flamethrower", "Dragon Claw"]), current_hp=100, in_party=True),
+            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Blastoise", level=50, moves=["Surf", "Ice Beam"]), current_hp=100, in_party=True),
+            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Venusaur", level=50, moves=["Giga Drain", "Sludge Bomb"]), current_hp=100, in_party=True),
+            MonInstance(id=str(uuid.uuid4()), spec=PokemonSpec(species="Pikachu", level=45, moves=["Thunderbolt"]), current_hp=100, in_party=False)
         ]
         
         return self._get_obs(), {}
         
     def step(self, action):
+        # Unpack action
+        roster_action = action[0]
+        risk_token = action[1]
+        
         # Simple logic
-        if action == 1:
-            # Swap logic (placeholder)
-            pass
+        if roster_action == 1:
+            # Swap logic (placeholder: swap first box mon with last party mon)
+            # Find first box mon
+            box_mon = next((m for m in self.roster if m.alive and not m.in_party), None)
+            # Find last party mon
+            party_mons = [m for m in self.roster if m.alive and m.in_party]
+            party_mon = party_mons[-1] if party_mons else None
             
-        # Proceed to battle (always battle for now if action 0)
+            if box_mon and party_mon:
+                box_mon.in_party = True
+                party_mon.in_party = False
+            
+        # Proceed to battle (always battle for now)
         current_trainer = self.gauntlet_template.trainers[self.current_trainer_idx]
         
         # Get party (alive and in_party)
         party = [m for m in self.roster if m.alive and m.in_party][:6]
         party_specs = [m.spec for m in party]
         
-        win, survivors = self.simulator.simulate_battle(party_specs, current_trainer.team)
+        # Simulate Battle
+        win, survivors = self.simulator.simulate_battle(party_specs, current_trainer.team, risk_token=risk_token)
         
         # Apply deaths
         deaths = 0
         for i, survived in enumerate(survivors):
-            if not survived:
-                party[i].alive = False
-                deaths += 1
+            if i < len(party): # Safety check
+                if not survived:
+                    party[i].alive = False
+                    deaths += 1
                 
         reward = 0
         terminated = False

@@ -42,7 +42,10 @@ class BattleEnv(SinglesEnv):
             # Default or random if not specified
             self.risk_token = np.random.randint(0, 3)
             
-        return super().reset(seed=seed, options=options)
+        print(f"DEBUG: BattleEnv.reset calling super().reset()...", flush=True)
+        ret = super().reset(seed=seed, options=options)
+        print(f"DEBUG: BattleEnv.reset returned from super().reset().", flush=True)
+        return ret
 
     def calc_reward(self, battle: AbstractBattle) -> float:
         reward = 0.0

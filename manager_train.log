@@ -1,0 +1,51 @@
+Initializing RealBattleSimulator with model: models/ppo_risk_agent_v1...
+Loading model from models/ppo_risk_agent_v1...
+/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/on_policy_algorithm.py:150: UserWarning: You are trying to run PPO on the GPU, but it is primarily intended to run on the CPU when not using a CNN policy (you are using ActorCriticPolicy which should be a MlpPolicy). See https://github.com/DLR-RM/stable-baselines3/issues/1245 for more info. You can pass `device='cpu'` or `export CUDA_VISIBLE_DEVICES=` to force using the CPU.Note: The model will train, but the GPU utilization will be poor and the training might take longer than on CPU.
+  warnings.warn(
+Model loaded.
+Initializing NuzlockeGauntletEnv...
+Initializing PPO Manager Agent...
+Using cuda device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+Starting training for 10 steps...
+Logging to ./tmp/manager/PPO_1
+Saving manager model to models/ppo_manager_v1...
+Model saved.
+Traceback (most recent call last):
+  File "/home/tristan/CodingProjects/ai_pokemon/train_manager.py", line 53, in <module>
+    train_manager(args.steps, args.model, args.battle_model)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/train_manager.py", line 33, in train_manager
+    model.learn(total_timesteps=steps, progress_bar=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/ppo/ppo.py", line 311, in learn
+    return super().learn(
+           ~~~~~~~~~~~~~^
+        total_timesteps=total_timesteps,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        progress_bar=progress_bar,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/on_policy_algorithm.py", line 311, in learn
+    total_timesteps, callback = self._setup_learn(
+                                ~~~~~~~~~~~~~~~~~^
+        total_timesteps,
+        ^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        progress_bar,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/base_class.py", line 434, in _setup_learn
+    callback = self._init_callback(callback, progress_bar)
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/base_class.py", line 378, in _init_callback
+    callback = CallbackList([callback, ProgressBarCallback()])
+                                       ~~~~~~~~~~~~~~~~~~~^^
+  File "/home/tristan/CodingProjects/ai_pokemon/.venv/lib/python3.13/site-packages/stable_baselines3/common/callbacks.py", line 709, in __init__
+    raise ImportError(
+    ...<3 lines>...
+    )
+ImportError: You must install tqdm and rich in order to use the progress bar callback. It is included if you install stable-baselines with the extra packages: `pip install stable-baselines3[extra]`

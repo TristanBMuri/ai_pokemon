@@ -11,4 +11,6 @@ dependencies = [
     "stable-baselines3>=2.7.0",
     "tensorboard>=2.20.0",
     "poke-env>=0.6.0",
+    "tqdm>=4.66.0",
+    "rich>=13.0.0",
 ]

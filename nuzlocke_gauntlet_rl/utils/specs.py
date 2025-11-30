@@ -12,6 +12,30 @@ class PokemonSpec(BaseModel):
     evs: dict[str, int] = Field(default_factory=dict)
     ivs: dict[str, int] = Field(default_factory=dict)
 
+    def to_showdown_format(self) -> str:
+        """Converts the spec to a Showdown-compatible string."""
+        lines = []
+        item_str = f" @ {self.item}" if self.item else ""
+        lines.append(f"{self.species}{item_str}")
+        lines.append(f"Level: {self.level}")
+        if self.ability:
+            lines.append(f"Ability: {self.ability}")
+        if self.nature:
+            lines.append(f"Nature: {self.nature}")
+        
+        if self.evs:
+            evs_str = " / ".join(f"{v} {k}" for k, v in self.evs.items())
+            lines.append(f"EVs: {evs_str}")
+            
+        if self.ivs:
+            ivs_str = " / ".join(f"{v} {k}" for k, v in self.ivs.items())
+            lines.append(f"IVs: {ivs_str}")
+            
+        for move in self.moves:
+            lines.append(f"- {move}")
+            
+        return "\n".join(lines)
+
 class TrainerSpec(BaseModel):
     """Defines a trainer and their team."""
     name: str
