@@ -90,14 +90,20 @@ def train_battle_agent(steps: int, model_name: str, server_url: str = "ws://192.
     t.start()
     
     # Initialize Agent
-    print(f"Initializing PPO Battle Agent...", flush=True)
-    model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="./tmp/battle_agent/")
+    print(f"Initializing RecurrentPPO Battle Agent...", flush=True)
+    try:
+        from sb3_contrib import RecurrentPPO
+    except ImportError:
+        print("Error: sb3-contrib not installed. Please install it to use RecurrentPPO.")
+        return
+
+    model = RecurrentPPO("MlpLstmPolicy", env, verbose=1, tensorboard_log="./tmp/battle_agent/")
     
     # Check if model exists to resume
     model_path = f"models/{model_name}"
     if os.path.exists(f"{model_path}.zip"):
         print(f"Loading existing battle model from {model_path}...", flush=True)
-        model = PPO.load(model_path, env=env)
+        model = RecurrentPPO.load(model_path, env=env)
     
     print(f"Starting training for {steps} steps...", flush=True)
     try:
@@ -116,7 +122,7 @@ def train_battle_agent(steps: int, model_name: str, server_url: str = "ws://192.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train the Nuzlocke Battle Agent")
     parser.add_argument("--steps", type=int, default=10000, help="Number of training steps")
-    parser.add_argument("--model", type=str, default="ppo_risk_agent_v3", help="Name of the battle agent model")
+    parser.add_argument("--model", type=str, default="ppo_risk_agent_lstm_v1", help="Name of the battle agent model")
     
     args = parser.parse_args()
     

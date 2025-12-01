@@ -16,9 +16,10 @@ class NuzlockeGauntletEnv(gym.Env):
     1: DONE - Game over.
     """
     
-    def __init__(self, simulator: BattleSimulator, gauntlet_name: str = "kanto_leaders"):
+    def __init__(self, simulator: BattleSimulator, gauntlet_name: str = "kanto_leaders", watch_mode: bool = False):
         super().__init__()
         self.simulator = simulator
+        self.watch_mode = watch_mode
         
         # Load gauntlet
         from nuzlocke_gauntlet_rl.data.parsers import load_kanto_leaders, load_indigo_league, load_team_rocket
@@ -198,7 +199,7 @@ class NuzlockeGauntletEnv(gym.Env):
         current_trainer = self.gauntlet_template.trainers[self.current_trainer_idx]
         
         # Simulate Battle
-        win, survivors = self.simulator.simulate_battle(party_specs, current_trainer.team, risk_token=risk_token)
+        win, survivors, metrics = self.simulator.simulate_battle(party_specs, current_trainer.team, risk_token=risk_token, print_url=self.watch_mode)
         
         # Apply deaths
         deaths = 0
@@ -231,7 +232,18 @@ class NuzlockeGauntletEnv(gym.Env):
             terminated = True
             reward -= 5.0
             
-        return self._get_obs(), reward, terminated, truncated, {}
+        # Add metrics to info
+        info = {
+            "metrics": {
+                "win": 1 if win else 0,
+                "turns": metrics.get("turns", 0),
+                "pokemon_fainted": deaths,
+                "opponent_fainted": metrics.get("opponent_fainted", 0),
+                "trainer_idx": self.current_trainer_idx
+            }
+        }
+            
+        return self._get_obs(), reward, terminated, truncated, info
         
     def _get_obs(self):
         party = [m for m in self.roster if m.alive and m.in_party][:6]

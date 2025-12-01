@@ -5,7 +5,9 @@ import sys
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
+from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.utils import set_random_seed
+from nuzlocke_gauntlet_rl.callbacks.metrics_callback import MetricsCallback
 from nuzlocke_gauntlet_rl.envs.nuzlocke_env import NuzlockeGauntletEnv
 from nuzlocke_gauntlet_rl.envs.real_battle_simulator import RealBattleSimulator
 from nuzlocke_gauntlet_rl.envs.mock_battle_simulator import MockBattleSimulator
@@ -54,6 +56,9 @@ def train_manager(steps: int, model_name: str, battle_model_path: str, use_mock:
     # We use PPO because the action space is MultiDiscrete
     print(f"Initializing PPO Manager Agent (n_steps={n_steps_per_update})...", flush=True)
     model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log="./tmp/manager/", n_steps=n_steps_per_update)
+    # Callbacks
+    checkpoint_callback = CheckpointCallback(save_freq=1000, save_path=f"./models/{model_name}_checkpoints", name_prefix=model_name)
+    metrics_callback = MetricsCallback()
     
     # Check if model exists to resume
     model_path = f"models/{model_name}"

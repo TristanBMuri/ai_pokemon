@@ -9,7 +9,7 @@ class MockBattleSimulator(BattleSimulator):
     A mock simulator that determines battle outcome based on simple heuristics.
     Used for testing the Manager agent without Showdown overhead.
     """
-    def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec], risk_token: int = 0) -> Tuple[bool, List[bool]]:
+    def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec], risk_token: int = 0) -> Tuple[bool, List[bool], dict]:
         # Simple heuristic:
         # Calculate total power of my team vs enemy team
         # Power = Level * 10
@@ -47,4 +47,8 @@ class MockBattleSimulator(BattleSimulator):
             else:
                 survivors.append(np.random.random() > 0.8) # 20% survival chance
                 
-        return win, survivors
+        metrics = {
+            "turns": np.random.randint(5, 20),
+            "opponent_fainted": len(enemy_team) if win else np.random.randint(0, len(enemy_team))
+        }
+        return win, survivors, metrics

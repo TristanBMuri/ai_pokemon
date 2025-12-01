@@ -51,15 +51,28 @@ class RealBattleSimulator(BattleSimulator):
         
         # Load Model
         print(f"Loading model from {model_path} (device={device})...")
-        self.model = PPO.load(model_path, device=device)
-        print("Model loaded.")
+        try:
+            from sb3_contrib import RecurrentPPO
+            # Try loading as RecurrentPPO first
+            try:
+                self.model = RecurrentPPO.load(model_path, device=device)
+                self.is_recurrent = True
+                print("Loaded RecurrentPPO model.")
+            except:
+                self.model = PPO.load(model_path, device=device)
+                self.is_recurrent = False
+                print("Loaded PPO model.")
+        except ImportError:
+            self.model = PPO.load(model_path, device=device)
+            self.is_recurrent = False
+            print("Loaded PPO model (sb3-contrib not found).")
         
         self.teambuilder = ParsingTeambuilder()
         
     def _pack_team(self, team_str: str) -> str:
         return self.teambuilder.join_team(self.teambuilder.parse_showdown_team(team_str))
 
-    def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec], risk_token: int = 0) -> Tuple[bool, List[bool]]:
+    def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec], risk_token: int = 0, print_url: bool = False) -> Tuple[bool, List[bool], dict]:
         """
         Runs a single battle simulation.
         """
@@ -116,11 +129,34 @@ class RealBattleSimulator(BattleSimulator):
         print("Calling self.env.reset()...", flush=True)
         obs, info = self.env.reset(options={"risk_token": risk_token})
         print("self.env.reset() returned.", flush=True)
+        
+        if print_url:
+            # Try to get battle tag/URL
+            # It might take a moment for the battle to start and tag to be available
+            time.sleep(2) 
+            battle = getattr(self.pz_env, "battle1", None)
+            if not battle: battle = getattr(self.pz_env, "battle", None)
+            
+            if battle and battle.battle_tag:
+                url = f"http://localhost:8000/{battle.battle_tag}"
+                print(f"\n[WATCH LIVE]: {url}\n", flush=True)
+            else:
+                print("\n[WATCH LIVE]: Could not retrieve battle URL (battle object not ready).\n", flush=True)
+
         done = False
         truncated = False
         
+        # LSTM States
+        lstm_states = None
+        episode_start = np.ones((1,), dtype=bool)
+        
         while not (done or truncated):
-            action, _ = self.model.predict(obs, deterministic=True)
+            if self.is_recurrent:
+                action, lstm_states = self.model.predict(obs, state=lstm_states, episode_start=episode_start, deterministic=True)
+                episode_start[0] = False
+            else:
+                action, _ = self.model.predict(obs, deterministic=True)
+                
             obs, reward, done, truncated, info = self.env.step(action)
             
         # Battle over.
@@ -131,7 +167,7 @@ class RealBattleSimulator(BattleSimulator):
              
         if not battle:
             print("ERROR: Could not find battle object on pz_env")
-            return False, [False]*len(my_team)
+            return False, [False]*len(my_team), {"turns": 0, "opponent_fainted": 0}
         
         win = battle.won
         
@@ -148,7 +184,13 @@ class RealBattleSimulator(BattleSimulator):
             if not found:
                 survivors.append(False) # Fallback
                 
-        return win, survivors
+        # Metrics
+        metrics = {
+            "turns": battle.turn,
+            "opponent_fainted": len([m for m in battle.opponent_team.values() if m.fainted])
+        }
+        
+        return win, survivors, metrics
 
     def _specs_to_team_str(self, specs: List[PokemonSpec]) -> str:
         return "\n\n".join([s.to_showdown_format() for s in specs])
