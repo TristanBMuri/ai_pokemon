@@ -80,7 +80,7 @@ def train_manager(steps: int, model_name: str, battle_model_path: str, use_mock:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train the Nuzlocke Manager Agent")
     parser.add_argument("--steps", type=int, default=1000, help="Number of training steps")
-    parser.add_argument("--model", type=str, default="ppo_manager_v3", help="Name of the manager agent model")
+    parser.add_argument("--model_name", type=str, default="ppo_manager_v4", help="Name of the model to save/load")
     parser.add_argument("--battle_model", type=str, default="models/ppo_risk_agent_v3", help="Path to the trained battle agent model")
     parser.add_argument("--mock", action="store_true", help="Use MockBattleSimulator instead of RealBattleSimulator")
     parser.add_argument("--gauntlet", type=str, default="extended", help="Gauntlet to train on")
@@ -89,4 +89,4 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    train_manager(args.steps, args.model, args.battle_model, args.mock, args.gauntlet, args.n_envs, args.n_steps_per_update)
+    train_manager(args.steps, args.model_name, args.battle_model, args.mock, args.gauntlet, args.n_envs, args.n_steps_per_update)

@@ -17,6 +17,31 @@ class MovesetGenerator:
             return self.pokedex[species_id].get("types", [])
         return []
 
+    def get_base_stats(self, species: str) -> List[int]:
+        """Returns [HP, Atk, Def, SpA, SpD, Spe]."""
+        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        if species_id in self.pokedex:
+            stats = self.pokedex[species_id].get("baseStats", {})
+            return [
+                stats.get("hp", 0),
+                stats.get("atk", 0),
+                stats.get("def", 0),
+                stats.get("spa", 0),
+                stats.get("spd", 0),
+                stats.get("spe", 0)
+            ]
+        return [0, 0, 0, 0, 0, 0]
+
+    def encode_ability(self, ability: str) -> int:
+        """Encodes ability name to int ID (hash mod 1000)."""
+        if not ability: return 0
+        return abs(hash(ability.lower())) % 1000
+
+    def encode_move(self, move: str) -> int:
+        """Encodes move name to int ID (hash mod 1000)."""
+        if not move: return 0
+        return abs(hash(move.lower())) % 1000
+
     def get_ability(self, species: str) -> str:
         """Returns the first ability of a species."""
         species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
@@ -34,19 +59,35 @@ class MovesetGenerator:
     def get_learnable_moves(self, species: str) -> List[str]:
         """Returns a list of all learnable moves for a species."""
         species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
-        # Handle special cases if needed (e.g. forms)
-        # poke-env usually handles forms by name (e.g. charizardmega)
         
-        if species_id not in self.learnset:
-            # Try to find base species if not found?
-            # For now, just return empty list or log warning
-            print(f"WARNING: No learnset found for {species_id}")
-            return []
+        # Try exact match first
+        if species_id in self.learnset:
+            data = self.learnset[species_id]
+            if "learnset" in data:
+                return list(data["learnset"].keys())
+            return list(data.keys())
+
+        # Fallback logic for forms
+        # Common suffixes to strip: -mega, -megax, -megay, -primal, -alola, -galar, -hisui, -paldea
+        # Also Ogerpon masks: -wellspring, -hearthflame, -cornerstone
+        # And others like -therian, -incarnate, etc.
+        
+        # Simple heuristic: try to find the base name by splitting on '-'
+        # But species_id has removed hyphens.
+        # So we work with the input species string.
+        
+        base_species = species.split("-")[0]
+        base_id = base_species.lower().replace(" ", "").replace(".", "")
+        
+        if base_id in self.learnset:
+            # print(f"DEBUG: Using base species {base_species} for {species}")
+            data = self.learnset[base_id]
+            if "learnset" in data:
+                return list(data["learnset"].keys())
+            return list(data.keys())
             
-        data = self.learnset[species_id]
-        if "learnset" in data:
-            return list(data["learnset"].keys())
-        return list(data.keys()) # Fallback if structure is different
+        print(f"WARNING: No learnset found for {species} (ID: {species_id}, Base: {base_id})")
+        return []
 
     def generate_builds(self, spec: PokemonSpec, n_builds: int = 3) -> List[List[str]]:
         """

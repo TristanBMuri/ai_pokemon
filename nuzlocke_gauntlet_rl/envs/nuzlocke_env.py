@@ -44,10 +44,10 @@ class NuzlockeGauntletEnv(gym.Env):
         self.current_trainer_idx = 0
         
         # Action Space:
-        # [0-5]: Roster Indices (Select 6 mons from max 30)
+        # [0-5]: Roster Indices (Select 6 mons from max 400)
         # [6-11]: Build Indices (Select build 0-2 for each mon)
         # [12]: Risk Token (0=Safe, 1=Neutral, 2=Desperate)
-        self.max_roster_size = 30
+        self.max_roster_size = 400 # Increased to accommodate extended gauntlet pool
         self.n_builds = 3
         
         dims = [self.max_roster_size] * 6 + [self.n_builds] * 6 + [3]
@@ -57,13 +57,18 @@ class NuzlockeGauntletEnv(gym.Env):
         # - Trainer Index (Discrete)
         # - Roster Count (Discrete)
         # - Top 6 Mons Levels (Box)
-        # - Opponent Team Preview (Box): 6 mons * 2 types (encoded)
-        #   We'll encode types as integers 0-18.
+        # - Opponent Team Preview (Box): 6 mons * 14 features
+        #   Features:
+        #   [0-1]: Types (2 ints, 0-18)
+        #   [2-7]: Base Stats (6 ints: HP, Atk, Def, SpA, SpD, Spe)
+        #   [8]: Level (1 int)
+        #   [9]: Ability ID (1 int, hash%1000)
+        #   [10-13]: Move IDs (4 ints, hash%1000)
         self.observation_space = spaces.Dict({
             "trainer_idx": spaces.Discrete(100), # Max 100 trainers
-            "roster_count": spaces.Discrete(100),
+            "roster_count": spaces.Discrete(self.max_roster_size + 1),
             "party_levels": spaces.Box(low=0, high=100, shape=(6,), dtype=np.float32),
-            "opponent_preview": spaces.Box(low=0, high=18, shape=(6, 2), dtype=np.int32)
+            "opponent_preview": spaces.Box(low=0, high=1000, shape=(6, 14), dtype=np.int32)
         })
         
     def reset(self, seed=None, options=None):
@@ -72,28 +77,44 @@ class NuzlockeGauntletEnv(gym.Env):
         self.current_trainer_idx = 0
         
         # Initialize starter roster (Full team of 6)
-        # Initialize large roster (Box System)
-        # We want ~50 fully evolved mons.
-        # For now, we'll use a curated list of strong mons to ensure viability.
-        species_pool = [
-            "Charizard", "Blastoise", "Venusaur", "Pikachu", "Snorlax", "Gengar",
-            "Dragonite", "Tyranitar", "Metagross", "Salamence", "Garchomp", "Hydreigon",
-            "Volcarona", "Aegislash", "Dragapult", "Gyarados", "Milotic", "Swampert",
-            "Infernape", "Empoleon", "Torterra", "Lucario", "Gardevoir", "Gallade",
-            "Scizor", "Heracross", "Weavile", "Gliscor", "Mamoswine", "Rotom-Wash",
-            "Ferrothorn", "Excadrill", "Conkeldurr", "Chandelure", "Haxorus", "Darmanitan",
-            "Alakazam", "Machamp", "Golem", "Slowbro", "Starmie", "Jolteon", "Vaporeon",
-            "Flareon", "Espeon", "Umbreon", "Sylveon", "Leafeon", "Glaceon", "Togekiss"
-        ]
+        # Initialize roster from Gauntlet Data
+        # Extract all unique species from the gauntlet's trainers
+        species_pool = set()
+        for trainer in self.gauntlet_template.trainers:
+            for mon in trainer.team:
+                species_pool.add(mon.species)
         
+        # Convert to list and sort for consistency (optional, but good for debugging)
+        species_list = sorted(list(species_pool))
+        
+        # If pool is empty (shouldn't happen), fallback
+        if not species_list:
+            species_list = ["Charizard", "Blastoise", "Venusaur", "Pikachu", "Snorlax", "Gengar"]
+            
         self.roster = []
-        for species in species_pool:
-            # Randomize ability/nature slightly? For now standard.
+        for species in species_list:
+            # Check if species exists in Pokedex
+            species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+            if species_id not in self.moveset_generator.pokedex:
+                # print(f"WARNING: Skipping {species} (ID: {species_id}) - Not in Pokedex.")
+                continue
+
+            # Get default ability
             ability = self.moveset_generator.get_ability(species)
+            
+            # Verify we can generate moves
+            test_spec = PokemonSpec(species=species, level=50, moves=[], ability=ability)
+            test_builds = self.moveset_generator.generate_builds(test_spec, n_builds=1)
+            
+            if not test_builds or not test_builds[0]:
+                # print(f"WARNING: Skipping {species} due to no valid movesets.")
+                continue
+            
+            # Create MonInstance
             self.roster.append(
                 MonInstance(
                     id=str(uuid.uuid4()), 
-                    spec=PokemonSpec(species=species, level=50, moves=[], ability=ability), 
+                    spec=test_spec, 
                     current_hp=100, 
                     in_party=False
                 )
@@ -218,10 +239,10 @@ class NuzlockeGauntletEnv(gym.Env):
         for i, m in enumerate(party):
             levels[i] = m.spec.level
             
-        # Opponent Preview
-        opponent_preview = np.zeros((6, 2), dtype=np.int32)
+        # Opponent Preview (Complete Overview)
+        # Shape: (6, 14)
+        opponent_preview = np.zeros((6, 14), dtype=np.int32)
         
-        # Type Mapping
         type_map = {
             "Normal": 1, "Fire": 2, "Water": 3, "Electric": 4, "Grass": 5, "Ice": 6,
             "Fighting": 7, "Poison": 8, "Ground": 9, "Flying": 10, "Psychic": 11,
@@ -231,9 +252,27 @@ class NuzlockeGauntletEnv(gym.Env):
         if self.current_trainer_idx < len(self.gauntlet_template.trainers):
             trainer = self.gauntlet_template.trainers[self.current_trainer_idx]
             for i, mon in enumerate(trainer.team[:6]):
+                # 1. Types (Indices 0-1)
                 types = self.moveset_generator.get_types(mon.species)
                 for j, t in enumerate(types[:2]):
                     opponent_preview[i, j] = type_map.get(t, 0)
+                
+                # 2. Base Stats (Indices 2-7)
+                stats = self.moveset_generator.get_base_stats(mon.species)
+                for j, s in enumerate(stats):
+                    opponent_preview[i, 2 + j] = s
+                    
+                # 3. Level (Index 8)
+                opponent_preview[i, 8] = mon.level
+                
+                # 4. Ability (Index 9)
+                # Use mon.ability if set, else fetch default
+                ability = mon.ability if mon.ability else self.moveset_generator.get_ability(mon.species)
+                opponent_preview[i, 9] = self.moveset_generator.encode_ability(ability)
+                
+                # 5. Moves (Indices 10-13)
+                for j, move in enumerate(mon.moves[:4]):
+                    opponent_preview[i, 10 + j] = self.moveset_generator.encode_move(move)
                 
         return {
             "trainer_idx": self.current_trainer_idx,
@@ -241,3 +280,4 @@ class NuzlockeGauntletEnv(gym.Env):
             "party_levels": levels,
             "opponent_preview": opponent_preview
         }
+

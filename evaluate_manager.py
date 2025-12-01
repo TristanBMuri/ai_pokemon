@@ -74,7 +74,7 @@ def evaluate_manager(episodes: int, model_name: str, battle_model_path: str, use
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate the Nuzlocke Manager Agent")
     parser.add_argument("--episodes", type=int, default=10, help="Number of evaluation episodes")
-    parser.add_argument("--model", type=str, default="ppo_manager_v2", help="Name of the manager model")
+    parser.add_argument("--model_name", type=str, default="ppo_manager_v4", help="Name of the model to load")
     parser.add_argument("--battle_model", type=str, default="models/ppo_risk_agent_v3", help="Path to the trained battle agent model")
     parser.add_argument("--mock", action="store_true", help="Use MockBattleSimulator instead of RealBattleSimulator")
     parser.add_argument("--gauntlet", type=str, default="kanto_leaders", help="Name of the gauntlet (kanto_leaders, indigo_league, team_rocket)")
