@@ -35,7 +35,7 @@ def make_env(rank: int, seed: int, battle_model_path: str, use_mock: bool, gaunt
     set_random_seed(seed)
     return _init
 
-def train_manager(steps: int, model_name: str, battle_model_path: str, use_mock: bool = False, gauntlet_name: str = "kanto_leaders", n_envs: int = 1):
+def train_manager(steps: int, model_name: str, battle_model_path: str, use_mock: bool = False, gauntlet_name: str = "kanto_leaders", n_envs: int = 1, n_steps_per_update: int = 2048):
     # Ensure models directory exists
     os.makedirs("models", exist_ok=True)
     
@@ -52,8 +52,8 @@ def train_manager(steps: int, model_name: str, battle_model_path: str, use_mock:
     
     # Initialize Manager Agent
     # We use PPO because the action space is MultiDiscrete
-    print(f"Initializing PPO Manager Agent...", flush=True)
-    model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log="./tmp/manager/")
+    print(f"Initializing PPO Manager Agent (n_steps={n_steps_per_update})...", flush=True)
+    model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log="./tmp/manager/", n_steps=n_steps_per_update)
     
     # Check if model exists to resume
     model_path = f"models/{model_name}"
@@ -80,12 +80,13 @@ def train_manager(steps: int, model_name: str, battle_model_path: str, use_mock:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train the Nuzlocke Manager Agent")
     parser.add_argument("--steps", type=int, default=1000, help="Number of training steps")
-    parser.add_argument("--model", type=str, default="ppo_manager_v2", help="Name of the manager model")
-    parser.add_argument("--battle_model", type=str, default="models/ppo_risk_agent_v2", help="Path to the trained battle agent model")
+    parser.add_argument("--model", type=str, default="ppo_manager_v3", help="Name of the manager agent model")
+    parser.add_argument("--battle_model", type=str, default="models/ppo_risk_agent_v3", help="Path to the trained battle agent model")
     parser.add_argument("--mock", action="store_true", help="Use MockBattleSimulator instead of RealBattleSimulator")
-    parser.add_argument("--gauntlet", type=str, default="kanto_leaders", help="Name of the gauntlet (kanto_leaders, indigo_league, team_rocket)")
+    parser.add_argument("--gauntlet", type=str, default="extended", help="Gauntlet to train on")
     parser.add_argument("--n_envs", type=int, default=1, help="Number of parallel environments")
+    parser.add_argument("--n_steps_per_update", type=int, default=2048, help="PPO n_steps (buffer size per env)")
     
     args = parser.parse_args()
     
-    train_manager(args.steps, args.model, args.battle_model, args.mock, args.gauntlet, args.n_envs)
+    train_manager(args.steps, args.model, args.battle_model, args.mock, args.gauntlet, args.n_envs, args.n_steps_per_update)

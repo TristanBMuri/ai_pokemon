@@ -103,11 +103,16 @@ def parse_boss_csv(file_path: str) -> List[TrainerSpec]:
                         if m.lower() == "return": continue
                         if m.lower() == "frustration": continue
                         
+                        # Exclude Gen 9 / Radical Red custom moves that break Gen 8 validation
+                        if "cease" in m.lower(): continue # Ceaseless Edge / Cease. Edge
+                        
                         # Mappings
                         if m == "Pow-Up Punch": m = "Power-Up Punch"
                         if m == "Soft-Boiled": m = "Soft-Boiled" # Correct
                         if m == "High Jump Kick": m = "High Jump Kick" # Correct
                         if m == "Feint Attack": m = "Feint Attack" # Correct
+                        if m == "Parab Charge": m = "Parabolic Charge"
+                        if m == "parabcharge": m = "Parabolic Charge"
                         
                         moves.append(m)
                 
@@ -155,3 +160,42 @@ def load_team_rocket() -> GauntletSpec:
     path = "data/Default Mode Bosses v4.1 (with EVs) - Radical Red - Team Rocket.csv"
     trainers = parse_boss_csv(path)
     return GauntletSpec(trainers=trainers)
+
+def load_extended_gauntlet() -> GauntletSpec:
+    """
+    Loads a combined gauntlet of 30+ trainers.
+    Order: Rocket -> Kanto Leaders -> Indigo League -> Rematches/Extras
+    """
+    rocket = load_team_rocket().trainers
+    leaders = load_kanto_leaders().trainers
+    league = load_indigo_league().trainers
+    
+    # Combined list
+    # Rocket (approx 5-6)
+    # Leaders (8)
+    # League (5)
+    # Total ~18-19
+    
+    combined = []
+    combined.extend(rocket)
+    combined.extend(leaders)
+    combined.extend(league)
+    
+    # To reach 30+, we can add "Rematch" versions (same trainers but higher level/harder)
+    # For now, let's just duplicate the Leaders and League as "Rematches"
+    # In a real scenario, we'd want distinct teams, but this works for the RL challenge.
+    
+    rematches = []
+    for t in leaders + league:
+        # Create a copy with "Rematch" name
+        new_team = []
+        for mon in t.team:
+            # Boost level by 10 for rematch
+            new_spec = mon.model_copy(update={"level": min(100, mon.level + 10)})
+            new_team.append(new_spec)
+            
+        rematches.append(TrainerSpec(name=f"Rematch {t.name}", team=new_team))
+        
+    combined.extend(rematches)
+    
+    return GauntletSpec(trainers=combined)

@@ -105,7 +105,9 @@ class BattleEnv(SinglesEnv):
         # 2. Opponent Active Mon: HP (1), Status (7), Boosts (7) -> 15
         # 3. Field: Weather (9), Terrain (5) -> 14
         # 4. Risk Token (3)
-        # Total: 47
+        # 5. Moves (4 * 4): Power, Acc, Eff, STAB -> 16
+        # 6. Team HP (6 + 6) -> 12
+        # Total: 47 + 16 + 12 = 75
         
         # Helper to encode status
         def encode_status(status):
@@ -114,10 +116,7 @@ class BattleEnv(SinglesEnv):
             if status is None:
                 encoding[0] = 1.0
             else:
-                # Map status enum to index
-                # poke_env.data.Status
                 try:
-                    # status.name is like 'BRN'
                     status_map = {'BRN': 1, 'FRZ': 2, 'PAR': 3, 'PSN': 4, 'SLP': 5, 'TOX': 6}
                     idx = status_map.get(status.name, 0)
                     encoding[idx] = 1.0
@@ -127,8 +126,6 @@ class BattleEnv(SinglesEnv):
 
         # Helper to encode boosts
         def encode_boosts(boosts):
-            # Boosts: atk, def, spa, spd, spe, accuracy, evasion
-            # Values -6 to +6. Normalize to 0-1 (add 6, divide by 12)
             encoding = np.zeros(7, dtype=np.float32)
             keys = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']
             for i, k in enumerate(keys):
@@ -138,19 +135,14 @@ class BattleEnv(SinglesEnv):
             
         # Helper to encode weather
         def encode_weather(weather):
-            # Weather: None, SUN, RAIN, SAND, HAIL, SNOW, HARSH_SUN, HEAVY_RAIN, STRONG_WINDS
-            # Map roughly
             encoding = np.zeros(9, dtype=np.float32)
             if weather is None:
                 encoding[0] = 1.0
             else:
-                # weather.name
                 w_map = {
                     'SUNNYDAY': 1, 'RAINDANCE': 2, 'SANDSTORM': 3, 'HAIL': 4, 'SNOW': 5,
                     'DESOLATELAND': 6, 'PRIMORDIALSEA': 7, 'DELTASTREAM': 8
                 }
-                # Note: poke-env weather names might differ slightly, checking common ones
-                # Using simple mapping based on string check if enum is tricky
                 name = weather.name if hasattr(weather, 'name') else str(weather).upper()
                 idx = w_map.get(name, 0)
                 encoding[idx] = 1.0
@@ -158,14 +150,12 @@ class BattleEnv(SinglesEnv):
 
         # Helper to encode terrain
         def encode_terrain(terrain):
-            # Terrain: None, ELECTRIC, GRASSY, MISTY, PSYCHIC
             encoding = np.zeros(5, dtype=np.float32)
             if terrain is None:
                 encoding[0] = 1.0
             else:
                 t_map = {'ELECTRIC': 1, 'GRASSY': 2, 'MISTY': 3, 'PSYCHIC': 4}
                 name = terrain.name if hasattr(terrain, 'name') else str(terrain).upper()
-                # Remove _TERRAIN suffix if present
                 name = name.replace('_TERRAIN', '')
                 idx = t_map.get(name, 0)
                 encoding[idx] = 1.0
@@ -180,7 +170,7 @@ class BattleEnv(SinglesEnv):
         else:
             my_hp = np.array([0.0], dtype=np.float32)
             my_status = np.zeros(7, dtype=np.float32); my_status[0] = 1.0
-            my_boosts = np.full(7, 0.5, dtype=np.float32) # 0 boost = 0.5
+            my_boosts = np.full(7, 0.5, dtype=np.float32)
 
         # Opponent Mon
         op = battle.opponent_active_pokemon
@@ -195,20 +185,8 @@ class BattleEnv(SinglesEnv):
 
         # Field
         weather_enc = encode_weather(battle.weather)
-        terrain_enc = encode_terrain(battle.fields) # battle.fields contains terrain? 
-        # Actually battle.fields is a dict of fields.
-        # battle.weather is a property.
-        # Terrain is usually in battle.fields?
-        # Let's check poke-env.
-        # For now, assume simple terrain check or just use 0 if not found.
-        # Actually battle.fields is for things like Trick Room.
-        # Terrain is not directly exposed as a single property in older poke-env?
-        # In modern poke-env, battle.fields might contain terrain.
-        # Let's check keys for 'electricterrain' etc.
-        
-        # Simplified terrain encoding
         terrain_enc = np.zeros(5, dtype=np.float32)
-        terrain_enc[0] = 1.0 # Default None
+        terrain_enc[0] = 1.0
         for field in battle.fields:
             f_str = str(field).upper()
             if 'ELECTRIC' in f_str: terrain_enc[1] = 1.0; terrain_enc[0] = 0.0
@@ -220,16 +198,66 @@ class BattleEnv(SinglesEnv):
         risk_encoding = np.zeros(3, dtype=np.float32)
         risk_encoding[self.risk_token] = 1.0
         
+        # Moves
+        moves_enc = np.zeros(16, dtype=np.float32)
+        if active:
+            # Get moves. battle.available_moves are the ones we can click.
+            # But we want to encode all 4 moves if possible, or just available ones?
+            # Let's encode the 4 moves in the move slots.
+            # active.moves is a dict.
+            move_list = list(active.moves.values())
+            for i, move in enumerate(move_list[:4]):
+                # Power
+                power = move.base_power / 100.0
+                # Accuracy
+                acc = move.accuracy
+                if acc is True: acc = 1.0
+                else: acc = acc / 100.0
+                
+                # Effectiveness
+                eff = 1.0
+                if op:
+                    eff = op.damage_multiplier(move.type)
+                
+                # STAB
+                stab = 1.0
+                if move.type in active.types:
+                    stab = 1.5
+                    
+                base_idx = i * 4
+                moves_enc[base_idx] = power
+                moves_enc[base_idx+1] = acc
+                moves_enc[base_idx+2] = eff
+                moves_enc[base_idx+3] = stab
+                
+        # Team HP
+        my_team_hp = np.zeros(6, dtype=np.float32)
+        op_team_hp = np.zeros(6, dtype=np.float32)
+        
+        # My Team
+        # battle.team is a dict of mon_ident -> Pokemon
+        for i, mon in enumerate(battle.team.values()):
+            if i < 6:
+                my_team_hp[i] = mon.current_hp_fraction
+                
+        # Opponent Team
+        # battle.opponent_team is a dict
+        for i, mon in enumerate(battle.opponent_team.values()):
+            if i < 6:
+                op_team_hp[i] = mon.current_hp_fraction
+        
         return np.concatenate([
             my_hp, my_status, my_boosts,
             op_hp, op_status, op_boosts,
             weather_enc, terrain_enc,
-            risk_encoding
+            risk_encoding,
+            moves_enc,
+            my_team_hp, op_team_hp
         ])
 
     def describe_embedding(self):
-        # Total dims: 15 + 15 + 9 + 5 + 3 = 47
-        dims = 47
+        # Total dims: 47 + 16 + 12 = 75
+        dims = 75
         return (
             np.zeros(dims, dtype=np.float32),
             np.ones(dims, dtype=np.float32),

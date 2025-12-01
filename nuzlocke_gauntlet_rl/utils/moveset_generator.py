@@ -10,6 +10,27 @@ class MovesetGenerator:
         self.pokedex = self.gen_data.pokedex
         self.moves = self.gen_data.moves
         
+    def get_types(self, species: str) -> List[str]:
+        """Returns the types of a species."""
+        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        if species_id in self.pokedex:
+            return self.pokedex[species_id].get("types", [])
+        return []
+
+    def get_ability(self, species: str) -> str:
+        """Returns the first ability of a species."""
+        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        if species_id in self.pokedex:
+            abilities = self.pokedex[species_id].get("abilities", {})
+            # Return first available ability (0 or H or S)
+            for k in ["0", "1", "H", "S"]:
+                if k in abilities:
+                    return abilities[k]
+            # Fallback: return any value
+            if abilities:
+                return list(abilities.values())[0]
+        return "No Ability"
+
     def get_learnable_moves(self, species: str) -> List[str]:
         """Returns a list of all learnable moves for a species."""
         species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
@@ -37,7 +58,18 @@ class MovesetGenerator:
             return [[] for _ in range(n_builds)]
             
         # Filter valid moves (exist in moves data)
-        valid_moves = [m for m in learnable_moves if m in self.moves]
+        # Also apply global blacklist here
+        bad_moves = {
+            "ceaseedge", "ceaselessedge", "hyperbeam", "gigaimpact", "blastburn", 
+            "frenzyplant", "hydrocannon", "roaroftime", "eternabeam", "meteorassault", 
+            "prismaticlaser", "focuspunch", "lastresort", "belch", "synchronoise", 
+            "dreameater", "explosion", "selfdestruct", "finalgambit", "memento"
+        }
+        
+        valid_moves = [
+            m for m in learnable_moves 
+            if m in self.moves and m.lower().replace(" ", "").replace("-", "") not in bad_moves
+        ]
         
         # Get Pokemon types
         species_id = spec.species.lower().replace(" ", "").replace("-", "").replace(".", "")
@@ -59,24 +91,45 @@ class MovesetGenerator:
         return builds
 
     def _generate_aggressive_build(self, moves: List[str], types: List[str]) -> List[str]:
-        """Prioritizes high power STAB moves and coverage."""
+        """Prioritizes high power STAB moves and coverage, avoiding recharge/bad moves."""
         stab_moves = []
         coverage_moves = []
         
+        # Moves to avoid for simple agents
+        bad_moves = {
+            "hyperbeam", "gigaimpact", "blastburn", "frenzyplant", "hydrocannon", 
+            "roaroftime", "eternabeam", "meteorassault", "prismaticlaser",
+            "focuspunch", "lastresort", "belch", "synchronoise", "dreameater",
+            "explosion", "selfdestruct", "finalgambit", "memento",
+            "ceaseedge", "ceaselessedge"
+        }
+        
         for m in moves:
+            move_id = m.lower().replace(" ", "").replace("-", "")
+            if move_id in bad_moves:
+                continue
+                
             move_data = self.moves[m]
             if move_data["category"] == "Status":
                 continue
                 
             power = move_data.get("basePower", 0)
-            if power < 40: continue # Skip weak moves
+            acc = move_data.get("accuracy", 100)
+            if acc is True: acc = 100
+            
+            # Skip weak moves or very inaccurate ones
+            if power < 60: continue 
+            if acc < 70: continue
+            
+            # Score = Power * (Acc/100)
+            score = power * (acc / 100.0)
             
             if move_data["type"] in types:
-                stab_moves.append((m, power))
+                stab_moves.append((m, score))
             else:
-                coverage_moves.append((m, power))
+                coverage_moves.append((m, score))
                 
-        # Sort by power desc
+        # Sort by score desc
         stab_moves.sort(key=lambda x: x[1], reverse=True)
         coverage_moves.sort(key=lambda x: x[1], reverse=True)
         
@@ -104,19 +157,41 @@ class MovesetGenerator:
         stab_moves = []
         status_moves = []
         
+        bad_moves = {
+            "hyperbeam", "gigaimpact", "blastburn", "frenzyplant", "hydrocannon", 
+            "roaroftime", "eternabeam", "meteorassault", "prismaticlaser",
+            "focuspunch", "lastresort", "belch", "synchronoise", "dreameater",
+            "explosion", "selfdestruct", "finalgambit", "memento",
+            "ceaseedge", "ceaselessedge"
+        }
+        
         for m in moves:
+            move_id = m.lower().replace(" ", "").replace("-", "")
+            if move_id in bad_moves:
+                continue
+                
             move_data = self.moves[m]
             if move_data["category"] == "Status":
-                status_moves.append(m)
+                # Prioritize good status moves
+                if move_id in ["protect", "thunderwave", "willowisp", "toxic", "roost", "recover", "softboiled", "synthesis", "moonlight", "morningsun", "slackoff", "milkdrink", "shoreup", "strengthsap", "swordsdance", "nastyplot", "calmmind", "bulkup", "dragondance", "shellsmash", "quiverdance", "stealthrock", "spikes", "defog", "rapidspin"]:
+                    status_moves.append((m, 100))
+                else:
+                    status_moves.append((m, 50))
             else:
                 power = move_data.get("basePower", 0)
-                if power < 40: continue
+                acc = move_data.get("accuracy", 100)
+                if acc is True: acc = 100
+                
+                if power < 60: continue
+                if acc < 70: continue
+                
+                score = power * (acc / 100.0)
+                
                 if move_data["type"] in types:
-                    stab_moves.append((m, power))
+                    stab_moves.append((m, score))
                     
         stab_moves.sort(key=lambda x: x[1], reverse=True)
-        # Randomize status moves to get variety
-        random.shuffle(status_moves)
+        status_moves.sort(key=lambda x: x[1], reverse=True)
         
         build = []
         # 2 STAB
@@ -124,11 +199,11 @@ class MovesetGenerator:
             build.append(m)
             
         # 2 Status
-        for m in status_moves[:2]:
+        for m, _ in status_moves[:2]:
             build.append(m)
             
         # Fill if needed
-        remaining = [m for m in moves if m not in build]
+        remaining = [m for m in moves if m not in build and m.lower().replace(" ", "").replace("-", "") not in bad_moves]
         random.shuffle(remaining)
         while len(build) < 4 and remaining:
             build.append(remaining.pop())

@@ -31,7 +31,8 @@ class RealBattleSimulator(BattleSimulator):
         self.opponent_name = f"SimOpp_{uuid.uuid4().hex[:8]}"
         
         # Initialize Opponent (Heuristic is better for realistic testing)
-        self.opponent = RandomPlayer(
+        # Initialize Opponent (Heuristic is better for realistic testing)
+        self.opponent = SimpleHeuristicsPlayer(
             battle_format="gen9customgame", # Custom game allows any team
             server_configuration=self.server_config,
             account_configuration=AccountConfiguration(self.opponent_name, None),
@@ -84,9 +85,9 @@ class RealBattleSimulator(BattleSimulator):
 
         # Start background thread to trigger challenge
         def challenge_trigger():
-            print("Challenge trigger thread started. Waiting 5s...", flush=True)
-            time.sleep(5) # Wait for reset to start
-            print("Triggering challenge now...", flush=True)
+            # print("Challenge trigger thread started. Waiting 1s...", flush=True)
+            time.sleep(1) # Wait for reset to start
+            # print("Triggering challenge now...", flush=True)
             # Find target
             target = self.pz_env
             if hasattr(self.pz_env, "agent1"):

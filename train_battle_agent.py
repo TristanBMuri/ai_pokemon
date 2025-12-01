@@ -21,7 +21,9 @@ def train_battle_agent(steps: int, model_name: str, server_url: str = "ws://192.
     print(f"Initializing Battle Agent Training (Agent: {agent_name}, Opponent: {opponent_name})...", flush=True)
     
     # Initialize Opponent
-    opponent = RandomPlayer(
+    # Initialize Opponent
+    from poke_env.player import SimpleHeuristicsPlayer
+    opponent = SimpleHeuristicsPlayer(
         battle_format="gen9customgame",
         server_configuration=server_config,
         account_configuration=AccountConfiguration(opponent_name, None),
@@ -114,7 +116,7 @@ def train_battle_agent(steps: int, model_name: str, server_url: str = "ws://192.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train the Nuzlocke Battle Agent")
     parser.add_argument("--steps", type=int, default=10000, help="Number of training steps")
-    parser.add_argument("--model", type=str, default="ppo_risk_agent_v2", help="Name of the battle agent model")
+    parser.add_argument("--model", type=str, default="ppo_risk_agent_v3", help="Name of the battle agent model")
     
     args = parser.parse_args()
     

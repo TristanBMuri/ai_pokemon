@@ -21,6 +21,7 @@ class PokemonSpec(BaseModel):
         if item == "Well. Mask": item = "Wellspring Mask"
         if item == "Hear. Mask": item = "Hearthflame Mask"
         if item == "Corn. Mask": item = "Cornerstone Mask"
+        if item == "terrainextend": item = "Terrain Extender"
         
         item_str = f" @ {item}" if item else ""
         
@@ -51,6 +52,7 @@ class PokemonSpec(BaseModel):
         if self.ability:
             # Sanitize ability (take first line if multiple)
             ability = self.ability.split('\n')[0].strip()
+            if ability == "intimidateboth": ability = "Intimidate"
             lines.append(f"Ability: {ability}")
             
         if self.nature:
