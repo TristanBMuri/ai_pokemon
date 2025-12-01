@@ -15,13 +15,46 @@ class PokemonSpec(BaseModel):
     def to_showdown_format(self) -> str:
         """Converts the spec to a Showdown-compatible string."""
         lines = []
-        item_str = f" @ {self.item}" if self.item else ""
-        lines.append(f"{self.species}{item_str}")
+        
+        # Item mapping
+        item = self.item
+        if item == "Well. Mask": item = "Wellspring Mask"
+        if item == "Hear. Mask": item = "Hearthflame Mask"
+        if item == "Corn. Mask": item = "Cornerstone Mask"
+        
+        item_str = f" @ {item}" if item else ""
+        
+        # Normalize species for Showdown
+        species = self.species
+        if species == "Kyogre-P":
+            species = "Kyogre-Primal"
+        elif species == "Groudon-P":
+            species = "Groudon-Primal"
+        elif species == "Ogerpon-W":
+            species = "Ogerpon-Wellspring"
+        elif species == "Ogerpon-H":
+            species = "Ogerpon-Hearthflame"
+        elif species == "Ogerpon-C":
+            species = "Ogerpon-Cornerstone"
+        elif species.endswith("-A"):
+            species = species[:-2] + "-Alola"
+        elif species.endswith("-G"):
+            species = species[:-2] + "-Galar"
+        elif species.endswith("-H"): # Hisui
+            species = species[:-2] + "-Hisui"
+        elif species.endswith("-P"): # Paldea (Tauros)
+            species = species[:-2] + "-Paldea"
+            
+        lines.append(f"{species}{item_str}")
         lines.append(f"Level: {self.level}")
+        
         if self.ability:
-            lines.append(f"Ability: {self.ability}")
+            # Sanitize ability (take first line if multiple)
+            ability = self.ability.split('\n')[0].strip()
+            lines.append(f"Ability: {ability}")
+            
         if self.nature:
-            lines.append(f"Nature: {self.nature}")
+            lines.append(f"{self.nature} Nature")
         
         if self.evs:
             evs_str = " / ".join(f"{v} {k}" for k, v in self.evs.items())

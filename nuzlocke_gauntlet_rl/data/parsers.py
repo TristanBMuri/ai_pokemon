@@ -79,7 +79,37 @@ def parse_boss_csv(file_path: str) -> List[TrainerSpec]:
                 for r in range(7, 11):
                     move = df.iloc[i+r, col_idx]
                     if isinstance(move, str) and move.strip() != "-" and move.strip() != "":
-                        moves.append(move.strip())
+                        m = move.strip()
+                        # Sanitize moves
+                        if m.lower().startswith("hp "): # Hidden Power
+                             continue # Skip Hidden Power for Gen 9 compatibility
+                        if m.lower() == "hpgrass": continue
+                        if m.lower() == "hpfire": continue
+                        if m.lower() == "hpelectric": continue
+                        if m.lower() == "hpice": continue
+                        if m.lower() == "hpwater": continue
+                        if m.lower() == "hpfighting": continue
+                        if m.lower() == "hpground": continue
+                        if m.lower() == "hpflying": continue
+                        if m.lower() == "hppsychic": continue
+                        if m.lower() == "hpbug": continue
+                        if m.lower() == "hprock": continue
+                        if m.lower() == "hpghost": continue
+                        if m.lower() == "hpdragon": continue
+                        if m.lower() == "hpsteel": continue
+                        if m.lower() == "hpdark": continue
+                        
+                        # Also "Return" and "Frustration" were removed in Gen 8
+                        if m.lower() == "return": continue
+                        if m.lower() == "frustration": continue
+                        
+                        # Mappings
+                        if m == "Pow-Up Punch": m = "Power-Up Punch"
+                        if m == "Soft-Boiled": m = "Soft-Boiled" # Correct
+                        if m == "High Jump Kick": m = "High Jump Kick" # Correct
+                        if m == "Feint Attack": m = "Feint Attack" # Correct
+                        
+                        moves.append(m)
                 
                 # Create Spec
                 # Note: EVs/IVs are further down, skipping for now for simplicity
@@ -111,5 +141,17 @@ def parse_boss_csv(file_path: str) -> List[TrainerSpec]:
 def load_kanto_leaders() -> GauntletSpec:
     """Helper to load the Kanto Leaders gauntlet."""
     path = "data/Default Mode Bosses v4.1 (with EVs) - Radical Red - Kanto Leaders.csv"
+    trainers = parse_boss_csv(path)
+    return GauntletSpec(trainers=trainers)
+
+def load_indigo_league() -> GauntletSpec:
+    """Helper to load the Indigo League gauntlet."""
+    path = "data/Default Mode Bosses v4.1 (with EVs) - Radical Red - Indigo League.csv"
+    trainers = parse_boss_csv(path)
+    return GauntletSpec(trainers=trainers)
+
+def load_team_rocket() -> GauntletSpec:
+    """Helper to load the Team Rocket gauntlet."""
+    path = "data/Default Mode Bosses v4.1 (with EVs) - Radical Red - Team Rocket.csv"
     trainers = parse_boss_csv(path)
     return GauntletSpec(trainers=trainers)
