@@ -36,8 +36,9 @@ class RealBattleSimulator(BattleSimulator):
         self.moveset_gen = MovesetGenerator()
         
         # Initialize Opponent (Now using RadicalRedPlayer for advanced difficulty)
-        # Use Gen 9 National Dex but Ban Tera and Z-Moves
-        format_str = "gen9nationaldex@@@terastallization clause,z-move clause"
+        # Reverting to customgame for stability as natdex+clauses caused hang.
+        # We will enforce "No Tera" by agent policy if possible, or try a simpler natdex later.
+        format_str = "gen9customgame"
         
         self.opponent = RadicalRedPlayer(
             battle_format=format_str, 
