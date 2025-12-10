@@ -14,4 +14,5 @@ dependencies = [
     "poke-env>=0.6.0",
     "tqdm>=4.66.0",
     "rich>=13.0.0",
+    "matplotlib>=3.10.7",
 ]

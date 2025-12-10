@@ -12,19 +12,16 @@ from nuzlocke_gauntlet_rl.envs.nuzlocke_env import NuzlockeGauntletEnv
 from nuzlocke_gauntlet_rl.envs.real_battle_simulator import RealBattleSimulator
 from nuzlocke_gauntlet_rl.envs.mock_battle_simulator import MockBattleSimulator
 
-def make_env(rank: int, seed: int, battle_model_path: str, use_mock: bool, gauntlet_name: str):
+def make_env(rank: int, seed: int, battle_model_path: str, use_mock: bool, gauntlet_name: str, n_servers: int = 4):
     def _init():
-        # NOTE: New Env __init__ creates its own simulator internally now.
-        # But for 'use_mock', we might need to patch it or pass a flag.
-        # The new env signature: (gauntlet_name, model_path, max_roster_size, simulator_url, watch_mode)
-        
-        # If we want to use mock, we might need to modify the env or run a dummy server.
-        # For now, we assume Real Simulator or we need to add a 'use_mock' flag to Env init.
-        # Let's assume Real for now as per user context.
+        # Distribute across n_servers (ports 8000 to 8000+n-1)
+        port = 8000 + (rank % n_servers)
+        ws_url = f"ws://localhost:{port}/showdown/websocket"
         
         env = NuzlockeGauntletEnv(
             gauntlet_name=gauntlet_name,
             model_path=battle_model_path,
+            simulator_url=ws_url
             # max_roster_size=400,
             # watch_mode=False
         )

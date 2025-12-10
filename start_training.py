@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import time
+import shutil
 import socket
 import argparse
 
@@ -11,7 +12,7 @@ import argparse
 MODEL_NAME = "ppo_nuzlocke_natdex_v1" # Updated for NatDex format
 GAUNTLET_NAME = "complete"      # Gauntlet to run: "complete", "kanto_leaders", etc.
 TOTAL_STEPS = 100_000           # Total training steps
-N_ENVS = 1                      # Number of parallel environments (1 for safer Dashboard/Showdown)
+N_ENVS = 24                     # Increased to 24 to saturate CPU/GPU better (Showdown is IO bound)
 N_STEPS = 2048                  # Steps per update (Buffer size)
 BATCH_SIZE = 64                 # Minibatch size
 LEARNING_RATE = 0.0003          # Learning Rate (PPO default: 3e-4)
@@ -28,42 +29,54 @@ def is_port_open(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
 
-def start_showdown():
-    if is_port_open(SHOWDOWN_port):
-        print(f"✅ Pokemon Showdown is already running on port {SHOWDOWN_port}.")
-        return None
-
-    print(f"⚠️  Pokemon Showdown not found on port {SHOWDOWN_port}.")
+def start_showdown(start_port=8000, n_servers=4):
+    processes = []
     
-    if not os.path.exists(SHOWDOWN_DIR):
-        print(f"❌ Error: Could not find Showdown directory at {SHOWDOWN_DIR}")
-        print("Please configure SHOWDOWN_DIR in start_training.py or start it manually.")
-        sys.exit(1)
+    # 1. Try to Autostart if Node exists
+    node_cmd = shutil.which("node") or os.environ.get("NODE_PATH")
+    
+    if node_cmd:
+        print(f"✅ Found Node.js at {node_cmd}")
+        for i in range(n_servers):
+            port = start_port + i
+            if is_port_open(port):
+                print(f"✅ Port {port} is active.")
+                continue
+                
+            print(f"🚀 Launching server on {port}...")
+            try:
+                log_file = open(f"showdown_server_{port}.log", "w")
+                proc = subprocess.Popen(
+                    [node_cmd, "pokemon-showdown", str(port)], 
+                    cwd=SHOWDOWN_DIR,
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT
+                )
+                processes.append(proc)
+            except Exception as e:
+                print(f"❌ Failed to start server on {port}: {e}")
+    else:
+        print("⚠️  Node.js not found. Skipping auto-start.")
+        print(f"ℹ️  Please ensure {n_servers} Showdown servers are running on ports {start_port}-{start_port + n_servers - 1}")
+
+    # 2. Wait for Ports to be Ready
+    print("Waiting for servers to be ready...")
+    ready = False
+    while not ready:
+        open_count = 0
+        for i in range(n_servers):
+            port = start_port + i
+            if is_port_open(port):
+                open_count += 1
         
-    print(f"🚀 Starting Pokemon Showdown from {SHOWDOWN_DIR}...")
-    try:
-        # Start in a separate process
-        # We use 'node pokemon-showdown' command
-        log_file = open("showdown_server.log", "w")
-        proc = subprocess.Popen(
-            ["node", "pokemon-showdown"], 
-            cwd=SHOWDOWN_DIR,
-            stdout=log_file,
-            stderr=subprocess.STDOUT
-        )
-        print("Waiting for server to initialize...", end="", flush=True)
-        for _ in range(10):
-            time.sleep(1)
-            if is_port_open(SHOWDOWN_port):
-                print(" Done!")
-                return proc
-            print(".", end="", flush=True)
-            
-        print("\n❌ Failed to detect server on port 8000. Check showdown_server.log.")
-        sys.exit(1)
-    except FileNotFoundError:
-        print("❌ Error: 'node' command not found. Do you have Node.js installed?")
-        sys.exit(1)
+        if open_count == n_servers:
+            ready = True
+            print("✅ All servers ready!")
+        else:
+            print(f"⏳ Waiting... ({open_count}/{n_servers} ready). Start them manually!")
+            time.sleep(3)
+        
+    return processes
 
 def run_training():
     # Construct command
@@ -96,14 +109,15 @@ def run_training():
 
 if __name__ == "__main__":
     # Check Server
-    server_proc = start_showdown()
+    server_proc_list = start_showdown(n_servers=4)
     
     try:
         # Run Training
         run_training()
     finally:
         # Cleanup
-        if server_proc:
-            print("Stopping Showdown Server...")
-            server_proc.terminate()
-            server_proc.wait()
+        if server_proc_list:
+            print("Stopping Showdown Servers...")
+            for p in server_proc_list:
+                p.terminate()
+                p.wait()

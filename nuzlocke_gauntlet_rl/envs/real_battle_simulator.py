@@ -127,8 +127,8 @@ class RealBattleSimulator(BattleSimulator):
         # We use the persistent loop now
         def challenge_trigger():
             tid = threading.get_ident()
-            print(f"[{tid}] Challenge Trigger: Sleeping 2s...", flush=True)
-            time.sleep(2) # Wait for reset to start
+            # print(f"[{tid}] Challenge Trigger: Sleeping 0.5s...", flush=True) 
+            time.sleep(0.5) # Reduced from 2s to optimize throughput
             print(f"[{tid}] Challenge Trigger: Woke up. Scheduling on loop {id(self.thread_loop)}", flush=True)
             
             # Find target
