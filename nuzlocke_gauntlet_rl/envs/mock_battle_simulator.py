@@ -39,16 +39,13 @@ class MockBattleSimulator(BattleSimulator):
         win = np.random.random() < win_prob
         
         # Survivors
-        # If win, more survivors.
-        survivors = []
-        for _ in my_team:
-            if win:
-                survivors.append(np.random.random() > 0.2) # 80% survival chance
-            else:
-                survivors.append(np.random.random() > 0.8) # 20% survival chance
-                
+    def simulate_battle(self, my_team, enemy_team, **kwargs):
+        # Always win, no deaths
+        win = True
+        survivors = [True] * len(my_team)
         metrics = {
-            "turns": np.random.randint(5, 20),
-            "opponent_fainted": len(enemy_team) if win else np.random.randint(0, len(enemy_team))
+            "win": True,
+            "turns": 5,
+            "opponent_fainted": len(enemy_team)
         }
         return win, survivors, metrics

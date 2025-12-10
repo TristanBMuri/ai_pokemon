@@ -21,9 +21,8 @@ def train_battle_agent(steps: int, model_name: str, server_url: str = "ws://192.
     print(f"Initializing Battle Agent Training (Agent: {agent_name}, Opponent: {opponent_name})...", flush=True)
     
     # Initialize Opponent
-    # Initialize Opponent
-    from poke_env.player import SimpleHeuristicsPlayer
-    opponent = SimpleHeuristicsPlayer(
+    from nuzlocke_gauntlet_rl.players.radical_red_player import RadicalRedPlayer
+    opponent = RadicalRedPlayer(
         battle_format="gen9customgame",
         server_configuration=server_config,
         account_configuration=AccountConfiguration(opponent_name, None),

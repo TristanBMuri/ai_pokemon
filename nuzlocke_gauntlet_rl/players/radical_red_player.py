@@ -1,7 +1,5 @@
 from poke_env.player import Player
-from poke_env.environment.pokemon import Pokemon
-from poke_env.environment.move import Move
-from poke_env.environment.battle import AbstractBattle
+from poke_env.battle import Pokemon, Move, AbstractBattle
 from poke_env.player.battle_order import BattleOrder, SingleBattleOrder
 import random
 

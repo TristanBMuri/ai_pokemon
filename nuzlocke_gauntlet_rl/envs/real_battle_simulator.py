@@ -5,6 +5,7 @@ import time
 from typing import List, Tuple
 from stable_baselines3 import PPO
 from poke_env.player import RandomPlayer, SimpleHeuristicsPlayer
+from nuzlocke_gauntlet_rl.players.radical_red_player import RadicalRedPlayer
 from poke_env import ServerConfiguration, AccountConfiguration
 from poke_env.environment.single_agent_wrapper import SingleAgentWrapper
 from poke_env.teambuilder import Teambuilder, ConstantTeambuilder
@@ -13,6 +14,7 @@ from nuzlocke_gauntlet_rl.envs.battle_simulator import BattleSimulator
 from nuzlocke_gauntlet_rl.utils.specs import PokemonSpec
 import uuid
 import os
+from nuzlocke_gauntlet_rl.utils.moveset_generator import MovesetGenerator
 
 # Dummy Teambuilder for parsing
 class ParsingTeambuilder(Teambuilder):
@@ -30,17 +32,22 @@ class RealBattleSimulator(BattleSimulator):
         self.agent_name = f"SimAgent_{uuid.uuid4().hex[:8]}"
         self.opponent_name = f"SimOpp_{uuid.uuid4().hex[:8]}"
         
-        # Initialize Opponent (Heuristic is better for realistic testing)
-        # Initialize Opponent (Heuristic is better for realistic testing)
-        self.opponent = SimpleHeuristicsPlayer(
-            battle_format="gen9customgame", # Custom game allows any team
+        # Moveset Generator for ability/move lookups
+        self.moveset_gen = MovesetGenerator()
+        
+        # Initialize Opponent (Now using RadicalRedPlayer for advanced difficulty)
+        # Use Gen 9 National Dex but Ban Tera and Z-Moves
+        format_str = "gen9nationaldex@@@terastallization clause,z-move clause"
+        
+        self.opponent = RadicalRedPlayer(
+            battle_format=format_str, 
             server_configuration=self.server_config,
             account_configuration=AccountConfiguration(self.opponent_name, None),
         )
         
         # Initialize BattleEnv (The Agent)
         self.pz_env = BattleEnv(
-            battle_format="gen9customgame",
+            battle_format=format_str,
             server_configuration=self.server_config,
             account_configuration1=AccountConfiguration(self.agent_name, None),
         )
@@ -48,6 +55,15 @@ class RealBattleSimulator(BattleSimulator):
         # Wrap for Gym
         from nuzlocke_gauntlet_rl.wrappers.single_agent_battle_wrapper import MySingleAgentWrapper
         self.env = MySingleAgentWrapper(self.pz_env, opponent=self.opponent)
+        
+        # [THREADING FIX] Create a persistent background loop for the opponent
+        self.thread_loop = asyncio.new_event_loop()
+        def _run_loop(loop):
+            asyncio.set_event_loop(loop)
+            loop.run_forever()
+            
+        self.loop_thread = threading.Thread(target=_run_loop, args=(self.thread_loop,), daemon=True)
+        self.loop_thread.start()
         
         # Load Model
         print(f"Loading model from {model_path} (device={device})...")
@@ -72,10 +88,20 @@ class RealBattleSimulator(BattleSimulator):
     def _pack_team(self, team_str: str) -> str:
         return self.teambuilder.join_team(self.teambuilder.parse_showdown_team(team_str))
 
+    def _sanitize_team(self, team: List[PokemonSpec]):
+        """Ensures all Pokemon have an ability (required for poke-env)."""
+        for p in team:
+            if not p.ability:
+                p.ability = self.moveset_gen.get_ability(p.species)
+
     def simulate_battle(self, my_team: List[PokemonSpec], enemy_team: List[PokemonSpec], risk_token: int = 0, print_url: bool = False) -> Tuple[bool, List[bool], dict]:
         """
         Runs a single battle simulation.
         """
+        # Sanitize Teams (Fill missing abilities)
+        self._sanitize_team(my_team)
+        self._sanitize_team(enemy_team)
+
         # Convert teams to string format
         my_team_str = self._specs_to_team_str(my_team)
         enemy_team_str = self._specs_to_team_str(enemy_team)
@@ -97,28 +123,45 @@ class RealBattleSimulator(BattleSimulator):
              self.pz_env._team = ConstantTeambuilder(my_packed)
 
         # Start background thread to trigger challenge
+        # We use the persistent loop now
         def challenge_trigger():
-            # print("Challenge trigger thread started. Waiting 1s...", flush=True)
-            time.sleep(1) # Wait for reset to start
-            # print("Triggering challenge now...", flush=True)
+            tid = threading.get_ident()
+            print(f"[{tid}] Challenge Trigger: Sleeping 2s...", flush=True)
+            time.sleep(2) # Wait for reset to start
+            print(f"[{tid}] Challenge Trigger: Woke up. Scheduling on loop {id(self.thread_loop)}", flush=True)
+            
             # Find target
             target = self.pz_env
             if hasattr(self.pz_env, "agent1"):
                 target = self.pz_env.agent1
             
-            # Run challenge in new loop
+            # Schedule challenge on persistent loop
             try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+                print(f"[{tid}] Calling run_coroutine_threadsafe...", flush=True)
+                fut = asyncio.run_coroutine_threadsafe(
+                    self.opponent.battle_against(target, n_battles=1),
+                    self.thread_loop
+                )
+                # Check for immediate errors (with a small timeout, or just log if it fails later)
+                # We can add a done callback to log errors
+                def log_error(future):
+                    try:
+                        future.result()
+                        print(f"[{tid}] Challenge Future Completed Successfully.", flush=True)
+                    except Exception as e:
+                        err_msg = f"[{tid}] Async challenge failed: {repr(e)}\n{traceback.format_exc()}"
+                        print(err_msg, flush=True)
+                        with open("sim_error.log", "a") as f:
+                            f.write(err_msg + "\n")
+                        
+                fut.add_done_callback(log_error)
+                print(f"[{tid}] Callback added.", flush=True)
                 
-                async def run_challenge():
-                     await self.opponent.ps_client.logged_in.wait()
-                     await self.opponent.battle_against(target, n_battles=1)
-                     
-                loop.run_until_complete(run_challenge())
-                loop.close()
             except Exception as e:
-                print(f"Challenge trigger failed: {e}")
+                 err_msg = f"[{tid}] Challenge trigger logic failed: {repr(e)}\n{traceback.format_exc()}"
+                 print(err_msg, flush=True)
+                 with open("sim_error.log", "a") as f:
+                     f.write(err_msg + "\n")
 
         t = threading.Thread(target=challenge_trigger, daemon=True)
         t.start()
@@ -186,6 +229,7 @@ class RealBattleSimulator(BattleSimulator):
                 
         # Metrics
         metrics = {
+            "win": win, # Required for Dashboard
             "turns": battle.turn,
             "opponent_fainted": len([m for m in battle.opponent_team.values() if m.fainted])
         }

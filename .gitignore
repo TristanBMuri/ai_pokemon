@@ -1,1 +1,32 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Environment
+.venv
+.env
+
+# Logs
+*.log
+logs/
+showdown_server.log
+sim_error.log
+pid_*.log
+
+# Models & Checkpoints
+models/
+checkpoints/
+runs/
+
+# IDE
+.idea/
+.vscode/
+
+# Aider
 .aider*
+
+# Local Data/Tmp
+tmp/
+pokemon-showdown/

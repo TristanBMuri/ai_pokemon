@@ -10,16 +10,42 @@ class MovesetGenerator:
         self.pokedex = self.gen_data.pokedex
         self.moves = self.gen_data.moves
         
+        # Global Move ID Mapping
+        # Sort keys for determinism
+        self.all_moves_list = sorted(list(self.moves.keys()))
+        self.move_to_id = {m: i+1 for i, m in enumerate(self.all_moves_list)} # 0 is RESERVED/EMPTY
+        self.id_to_move_map = {i+1: m for i, m in enumerate(self.all_moves_list)}
+        self.max_move_id = len(self.all_moves_list)
+        
+    def _to_id(self, text: str) -> str:
+        """Converts text to Showdown ID format (lowercase, alphanumeric only)."""
+        return "".join(c for c in text.lower() if c.isalnum())
+        
+    def get_move_id(self, move_name: str) -> int:
+        clean_name = self._to_id(move_name)
+        return self.move_to_id.get(clean_name, 0)
+        
+    def get_move_name(self, move_id: int) -> str:
+        return self.id_to_move_map.get(move_id, None)
+
+    def get_learnable_moves_ids(self, species: str) -> List[int]:
+        names = self.get_learnable_moves(species)
+        return [self.get_move_id(n) for n in names if n in self.move_to_id]
+
+    def get_learnable_moves_ids_at_level(self, species: str, level: int) -> List[int]:
+        names = self.get_learnable_moves_at_level(species, level)
+        return [self.get_move_id(n) for n in names if n in self.move_to_id]
+
     def get_types(self, species: str) -> List[str]:
         """Returns the types of a species."""
-        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        species_id = self._to_id(species)
         if species_id in self.pokedex:
             return self.pokedex[species_id].get("types", [])
         return []
 
     def get_base_stats(self, species: str) -> List[int]:
         """Returns [HP, Atk, Def, SpA, SpD, Spe]."""
-        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        species_id = self._to_id(species)
         if species_id in self.pokedex:
             stats = self.pokedex[species_id].get("baseStats", {})
             return [
@@ -42,9 +68,10 @@ class MovesetGenerator:
         if not move: return 0
         return abs(hash(move.lower())) % 1000
 
+
     def get_ability(self, species: str) -> str:
         """Returns the first ability of a species."""
-        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        species_id = self._to_id(species)
         if species_id in self.pokedex:
             abilities = self.pokedex[species_id].get("abilities", {})
             # Return first available ability (0 or H or S)
@@ -58,7 +85,7 @@ class MovesetGenerator:
 
     def get_learnable_moves(self, species: str) -> List[str]:
         """Returns a list of all learnable moves for a species."""
-        species_id = species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        species_id = self._to_id(species)
         
         # Try exact match first
         if species_id in self.learnset:
@@ -77,7 +104,7 @@ class MovesetGenerator:
         # So we work with the input species string.
         
         base_species = species.split("-")[0]
-        base_id = base_species.lower().replace(" ", "").replace(".", "")
+        base_id = self._to_id(base_species)
         
         if base_id in self.learnset:
             # print(f"DEBUG: Using base species {base_species} for {species}")
@@ -88,6 +115,51 @@ class MovesetGenerator:
             
         print(f"WARNING: No learnset found for {species} (ID: {species_id}, Base: {base_id})")
         return []
+
+    def get_learnable_moves_at_level(self, species: str, level: int, gen: int = 9) -> List[str]:
+        """Returns moves learnable by level up up to specific level."""
+        species_id = self._to_id(species)
+        learnset_data = None
+        
+        # 1. Try exact
+        if species_id in self.learnset:
+            learnset_data = self.learnset[species_id]
+        else:
+            # 2. Try base
+            base_species = species.split("-")[0]
+            base_id = self._to_id(base_species)
+            if base_id in self.learnset:
+                learnset_data = self.learnset[base_id]
+        
+        if not learnset_data: return []
+        
+        # Extract 'learnset' dict
+        data = learnset_data.get("learnset", learnset_data)
+        
+        valid_moves = []
+        prefix = f"{gen}L"
+        
+        for move_id, sources in data.items():
+            for src in sources:
+                # Check for Level Up in current Gen (e.g. 9L15)
+                # Also support older gens? No, Radical Red is Gen 9 based.
+                if src.startswith(prefix):
+                    try:
+                        req_lvl = int(src[len(prefix):])
+                        if req_lvl <= level:
+                            valid_moves.append(move_id)
+                            break # Found valid source
+                    except: pass
+                
+                # Check for Level 1 moves from older gens if current gen missing?
+                # Or "Start" moves. Poke-env data usually uses "9L1" for start moves.
+                # But sometimes just "8L1" if unchanged?
+                # Let's check for ANY "L1" or "L0" from Gen 9, 8, 7.
+                if (f"{gen}L1" in src) or (f"{gen-1}L1" in src) or (f"{gen-2}L1" in src):
+                     valid_moves.append(move_id)
+                     break
+                     
+        return valid_moves
 
     def generate_builds(self, spec: PokemonSpec, n_builds: int = 3) -> List[List[str]]:
         """
@@ -113,7 +185,7 @@ class MovesetGenerator:
         ]
         
         # Get Pokemon types
-        species_id = spec.species.lower().replace(" ", "").replace("-", "").replace(".", "")
+        species_id = self._to_id(spec.species)
         types = self.pokedex.get(species_id, {}).get("types", [])
         
         builds = []
