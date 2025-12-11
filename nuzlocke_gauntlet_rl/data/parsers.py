@@ -269,7 +269,7 @@ def load_complete_gauntlet() -> GauntletSpec:
              unique_name = f"{name} ({loc})" if loc else name
              if unique_name in added_names: unique_name += " (Duplicate)"
              
-             new_spec = TrainerSpec(name=unique_name, team=match.team)
+             new_spec = TrainerSpec(name=unique_name, team=match.team, level_cap=cap)
              final_gauntlet_list.append(new_spec)
              added_names.add(unique_name)
         else:

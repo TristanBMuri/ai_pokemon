@@ -253,11 +253,17 @@ class NuzlockeGauntletEnv(gym.Env):
          current_trainer = self.gauntlet_template.trainers[self.current_trainer_idx]
          
          # Level Scaling
-         if current_trainer.team:
-            target_level = max(p.level for p in current_trainer.team)
-            target_level = max(5, target_level)
-            for m in self.party:
-                m.spec.level = target_level
+         target_level = 5
+         if current_trainer.level_cap:
+             target_level = current_trainer.level_cap
+         elif current_trainer.team:
+             target_level = max(p.level for p in current_trainer.team)
+             
+         target_level = max(5, target_level)
+         
+         for m in self.party:
+             # RATCHET LEVELING: Only scale UP. Never down.
+             m.spec.level = max(m.spec.level, target_level)
          
          party_specs = [m.spec for m in self.party]
          
