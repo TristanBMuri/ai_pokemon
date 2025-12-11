@@ -20,6 +20,12 @@ class BridgePlayer(Player):
         self.current_risk = 0
         self._last_fainted_count = 0 
         self._current_battle_ref = None
+        
+        # SAFE CLEANUP BUFFER
+        # We cannot delete battles immediately on finish because Showdown might send 
+        # trailing messages (e.g. |deinit|) which causes _get_battle to hang if missing.
+        # We keep a buffer of recent battles and only delete old ones.
+        self._finished_battles = [] 
 
     def calc_reward(self, battle):
         reward = 0.0
@@ -129,19 +135,42 @@ class BridgePlayer(Player):
         obs = self.embedder.embed_battle(battle, risk_token=self.current_risk)
         self.obs_queue.put((obs, reward, terminated, truncated, info))
         
-        # MEMORY LEAK FIX: Explicitly remove the finished battle from the dictionary
-        # poke-env keeps all battles in `self._battles` by default.
-        if battle.battle_tag in self._battles:
-            del self._battles[battle.battle_tag]
+        # MEMORY LEAK FIX: Explicitly remove references
+        # This is critical for long running training!
+        try:
+            # 1. Delayed Cleanup Strategy to prevent Deadlocks
+            # Showdown might send trailing messages (e.g. |deinit|) after "win".
+            # If we delete the battle immediately, _get_battle hangs waiting for it.
+            # So we keep the last 50 battles and delete older ones.
+            battle_id = battle.battle_tag
+            self._finished_battles.append(battle_id)
             
-        # FIX: Also clear the OPPONENT'S battle history, as it lives in the same process!
-        if hasattr(self, "opponent") and battle.battle_tag in self.opponent._battles:
-             del self.opponent._battles[battle.battle_tag]
-            
-        # AGGRESSIVE CLEANUP & LOGGING
-        # Periodically force GC to reclaim circular references
-        if len(self._battles) == 0: # Should be empty now
-             pass
+            if len(self._finished_battles) > 50:
+                old_battle_id = self._finished_battles.pop(0)
+                
+                # Delete from self._battles
+                if old_battle_id in self._battles:
+                    del self._battles[old_battle_id]
+                    
+                # Delete from opponent._battles
+                if hasattr(self, "opponent") and self.opponent:
+                    if hasattr(self.opponent, "_battles") and old_battle_id in self.opponent._battles:
+                        del self.opponent._battles[old_battle_id]
+
+            # 3. NUCLEAR OPTION: Force Linux to reclaim memory
+            # Python releases to allocator, but allocator might keep it from OS.
+            # malloc_trim(0) forces it back.
+            import random
+            import gc
+            if random.random() < 0.1: # 10% chance (Performance tradeoff)
+                gc.collect()
+                try:
+                    ctypes.CDLL("libc.so.6").malloc_trim(0)
+                except Exception:
+                    pass
+
+        except Exception as e:
+            print(f"Error in cleanup: {e}", flush=True)
         
         # We can implement a counter if we want, but for now let's just GC occasionally
         # Since we are in a callback, we don't have easy access to a counter unless we add one to self
@@ -229,6 +258,9 @@ class ThreadedBattleEnv(Env):
                 battle_format="gen9customgame",
                 team=self.agent_team
             )
+            
+            # MEMORY LEAK FIX: Link opponent to player so cleanup code works
+            self.player.opponent = self.opponent
             
             async def main_loop():
                 # Explicit Login

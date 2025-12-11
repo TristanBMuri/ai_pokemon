@@ -1,3 +1,12 @@
+import os
+# AGGRESSIVE MEMORY SAVING:
+# Prevent PyTorch/NumPy from spawning massive thread pools in each worker.
+# With 30 workers, we don't want 30 * 32 threads!
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+# Prevent memory fragmentation (classic Python/Linux fix for "slow crawl")
+os.environ["MALLOC_ARENA_MAX"] = "2"
+os.environ["RAY_DEDUP_LOGS"] = "0" # Keep full logs for debugging
 
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
@@ -85,7 +94,29 @@ if __name__ == "__main__":
     
     # Using default Ray init (auto-detect resources)
     # Disable dashboard to prevent metrics buffering leak (connection errors seen in logs)
-    ray.init(ignore_reinit_error=True, include_dashboard=False)
+    # Cap Object Store Memory to 2GB to prevent ballooning
+    # runtime_env guarantees these vars reach the workers!
+    ray.init(
+        ignore_reinit_error=True, 
+        include_dashboard=False, 
+        object_store_memory=2*1024*1024*1024,
+        # EFFECTIVELY DISABLE METRICS AGENT:
+        # Set reporting interval to 11 days (infinity) so it never tries to push data.
+        _system_config={
+            "metrics_report_interval_ms": 1000000000,
+            "task_events_report_interval_ms": 1000000000
+        },
+        runtime_env={
+            "env_vars": {
+                "OMP_NUM_THREADS": "1",
+                "MKL_NUM_THREADS": "1",
+                "MALLOC_ARENA_MAX": "2",
+                "RAY_DEDUP_LOGS": "0",
+                "RAY_USAGE_STATS_ENABLED": "0",
+                "RAY_DISABLE_DASHBOARD_LOG_INFO": "1"
+            }
+        }
+    )
     
     algo = (
         PPOConfig()
