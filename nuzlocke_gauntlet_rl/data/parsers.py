@@ -3,6 +3,8 @@ import math
 import re
 from typing import List, Optional, Dict, Tuple
 from nuzlocke_gauntlet_rl.utils.specs import PokemonSpec, TrainerSpec, GauntletSpec
+from nuzlocke_gauntlet_rl.mechanics.map_core import GauntletMap, GauntletNode
+import uuid
 
 def load_trainer_order() -> List[Tuple[str, str, int]]:
     """
@@ -380,3 +382,40 @@ def load_encounters(file_path: str = "data/Pokémon Locations & Raid Dens v4.1 -
         encounters_map[loc_name] = loc_encounters
         
     return encounters_map
+
+def build_gauntlet_graph(gauntlet_spec: GauntletSpec) -> GauntletMap:
+    """
+    Constructs a GauntletMap from a linear GauntletSpec.
+    Currently creates a linear chain of GYM nodes.
+    """
+    g_map = GauntletMap()
+    
+    prev_node_id = None
+    
+    for i, trainer in enumerate(gauntlet_spec.trainers):
+        node_id = str(uuid.uuid4())
+        
+        # Determine Type (Heuristic for now, or just all Gyms?)
+        # Logic: If it's in the main list, it's a mandatory fight for now.
+        node_type = GauntletNode.TYPE_GYM
+        
+        node = GauntletNode(
+            node_id=node_id,
+            node_type=node_type,
+            name=trainer.name,
+            data={"trainer": trainer, "trainer_idx": i}
+        )
+        
+        g_map.add_node(node)
+        
+        if prev_node_id:
+            # Link previous to current
+            prev_node = g_map.get_node(prev_node_id)
+            prev_node.add_edge(node_id)
+        else:
+            g_map.set_start(node_id)
+            
+        prev_node_id = node_id
+        
+    g_map.end_node_id = prev_node_id
+    return g_map

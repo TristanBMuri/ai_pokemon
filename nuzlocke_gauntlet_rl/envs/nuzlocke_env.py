@@ -9,9 +9,13 @@ from nuzlocke_gauntlet_rl.utils.specs import PokemonSpec, TrainerSpec, GauntletS
 from nuzlocke_gauntlet_rl.data.parsers import (
     load_kanto_leaders, 
     load_indigo_league, 
+    load_kanto_leaders, 
+    load_indigo_league, 
     load_team_rocket, 
-    load_complete_gauntlet  # Ensure this is available
+    load_complete_gauntlet,  # Ensure this is available
+    build_gauntlet_graph
 )
+from nuzlocke_gauntlet_rl.mechanics.map_core import GauntletMap, GauntletNode
 from nuzlocke_gauntlet_rl.envs.real_battle_simulator import RealBattleSimulator
 # For testing/mocking, you might conditionally import MockBattleSimulator
 
@@ -28,11 +32,14 @@ class NuzlockeGauntletEnv(gym.Env):
     
     metadata = {"render_modes": ["human"]}
     
-    # State Constants
     PHASE_DECISION = 0
     PHASE_SELECT_MEMBER = 1
     PHASE_SELECT_MOVE = 2
     PHASE_SELECT_STARTER = 3
+    PHASE_STRATEGIST = 4 
+    PHASE_BUILD_SPECIES = 5 
+    PHASE_BUILD_MOVE = 6
+    PHASE_BUILD_ITEM = 7
     
     def __init__(
         self,
@@ -68,6 +75,10 @@ class NuzlockeGauntletEnv(gym.Env):
         from nuzlocke_gauntlet_rl.utils.moveset_generator import MovesetGenerator
         self.moveset_generator = MovesetGenerator()
         
+        # [NEW] Build Map
+        self.gauntlet_map = build_gauntlet_graph(self.gauntlet_template)
+        self.current_node_id = self.gauntlet_map.start_node_id
+        
         # Determine Limits
         self.max_roster_size = max_roster_size
         self.max_move_id = self.moveset_generator.max_move_id # e.g. ~950
@@ -91,12 +102,14 @@ class NuzlockeGauntletEnv(gym.Env):
         
         # For simplicity, we reuse the old structure but add phase info.
         self.observation_space = spaces.Dict({
-            "phase": spaces.Discrete(5), # 0=Decision, 1=Mem, 2=Move, 3=Starter
-            "slot_idx": spaces.Discrete(7), # Which member 0-5, or move 0-3
-            "trainer_idx": spaces.Discrete(100),
+            "phase": spaces.Discrete(8), # Updated to include new phases
+            "slot_idx": spaces.Discrete(7), 
+            "node_idx": spaces.Discrete(200), # Approximate node count
             "roster_count": spaces.Discrete(self.max_roster_size + 1),
-            "party_levels": spaces.Box(low=0, high=100, shape=(6,), dtype=np.float32), # Current team state?
-            "opponent_preview": spaces.Box(low=0, high=1000, shape=(6, 14), dtype=np.int32)
+            "party_levels": spaces.Box(low=0, high=100, shape=(6,), dtype=np.float32), 
+            "opponent_preview": spaces.Box(low=0, high=1000, shape=(6, 14), dtype=np.int32),
+            "map_state": spaces.Box(low=0, high=1, shape=(10,), dtype=np.float32),
+            "risk_vector": spaces.Box(low=0, high=1, shape=(6,), dtype=np.float32) # Struct for risk per party slot?
         })
         
         # Simulator
@@ -118,7 +131,8 @@ class NuzlockeGauntletEnv(gym.Env):
         
         # Internal State
         self.roster: List[MonInstance] = []
-        self.current_trainer_idx = 0
+        # self.current_trainer_idx = 0 # DEPRECATED
+        self.current_node_id = self.gauntlet_map.start_node_id
         self.visited_routes: Set[str] = set()
         self.party: List[MonInstance] = [] # Current ACTIVE party
         self.rebuild_count = 0 # Track rebuilds for current trainer
@@ -127,13 +141,16 @@ class NuzlockeGauntletEnv(gym.Env):
         self.build_party_specs: List[PokemonSpec] = []
         self.build_current_mon: Optional[MonInstance] = None
         self.build_current_moves: List[str] = []
+        self.current_party_slot = 0 # 0-5
+        self.current_move_slot = 0 # 0-3
         
         self.current_phase = self.PHASE_DECISION
-        self.current_slot = 0
+        self.current_slot = 0 # Exposed in Obs, derived from above
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
-        self.current_trainer_idx = 0
+        # self.current_trainer_idx = 0 # DEPRECATED
+        self.current_node_id = self.gauntlet_map.start_node_id
         self.rebuild_count = 0
         
         # 1. Initialize Roster with Starter
@@ -150,8 +167,8 @@ class NuzlockeGauntletEnv(gym.Env):
         # Clear Party
         self.party = []
         
-        # Start at DECISION. If no party, user MUST rebuild (masking handles this?).
-        self.current_phase = self.PHASE_SELECT_STARTER # Start here if roster empty
+        # Start at STARTER selection, then transition to STRATEGIST
+        self.current_phase = self.PHASE_SELECT_STARTER
         
         return self._get_obs(), {}
 
@@ -170,87 +187,117 @@ class NuzlockeGauntletEnv(gym.Env):
             else:
                 self.roster.append(self.mechanics.get_starter_choice(1)) # Check your bounds!
                 
-            self.current_phase = self.PHASE_DECISION
+            self.current_phase = self.PHASE_STRATEGIST
             return self._get_obs(), 0, False, False, {"metrics": {}}
+
+        # PHASE: STRATEGIST [NEW]
+        elif self.current_phase == self.PHASE_STRATEGIST:
+            # Action: Choose Next Node (0 to N-1)
+            # Currently we are AT a node. The Strategist decides to ENGAGE this node or (if optional) SKIP.
+            # But our map graph structure implies we are at a node.
+            # Let's say we are "Looking at" self.current_node_id.
+            # Action 0: Enter/Engage.
+            # Action 1: Skip (if optional).
+            
+            # Since our current graph is linear Gyms (Mandatory), we just auto-transition or accept 0.
+            
+            # Future: If we have branches, self.gauntlet_map.get_successors(current)
+            
+            # For now, just move to DECISION (Builder/Fight choice)
+            self.current_phase = self.PHASE_DECISION
+            return self._get_obs(), 0, False, False, {}
 
         # PHASE: DECISION
         elif self.current_phase == self.PHASE_DECISION:
             if action == 1: # REBUILD
-                 # Reward penalty only if this is not the first rebuild (Chicken Out)
+                 # Economy: Cost 5 if > 0
+                 cost = 0.0
                  if self.rebuild_count > 0:
-                     reward = -0.1 # Punishment for indecision/chickening out
+                     cost = 5.0 # Reflecting specs
+                     # self.current_budget -= 5 # If we tracked budget? prompt says "Progress + Items - Cost of deaths".
+                     # Just applying negative reward?
+                     reward = -0.1 * cost # Scale down to RL reward? Or just -5?
+                     # Let's use -0.1 as base penalty to avoid huge swings, or strict -5 if budget
+                     reward = -0.5 # Penalty
                  
                  self.rebuild_count += 1
-                 self.current_phase = self.PHASE_SELECT_MEMBER
-                 self.current_slot = 0
-                 self.build_party_specs = []
-                 self.party = [] # Clear old party
+                 
+                 # Initialize Build
+                 self.current_phase = self.PHASE_BUILD_SPECIES
+                 self.current_party_slot = 0
+                 self.party = [] # Reset Party
                  
             else: # FIGHT (0)
                  # Executed when agent is confident
                  outcome = self._run_battle()
                  return outcome # _run_battle returns full step tuple
 
-        # PHASE: SELECT MEMBER
-        elif self.current_phase == self.PHASE_SELECT_MEMBER:
+        # PHASE: BUILD SPECIES (Slot 1-6)
+        elif self.current_phase == self.PHASE_BUILD_SPECIES:
              # Action is Roster Index
              if 0 <= action < len(self.roster):
-                 mon = self.roster[action] # Get instance
-                 if mon.alive and mon not in self.party: 
-                     # Start building this Mon
+                 mon = self.roster[action]
+                 # Valid pick? Alive and not already in party?
+                 # Note: self.party is being built.
+                 if mon.alive and mon not in self.party:
                      self.build_current_mon = mon
                      self.build_current_moves = []
-                     
-                     # Switch to MOVES
-                     self.current_phase = self.PHASE_SELECT_MOVE
-                     self.current_slot = 0
+                     self.current_move_slot = 0
+                     self.current_phase = self.PHASE_BUILD_MOVE
+                 else:
+                     # Invalid pick (Should be masked). Penalty?
+                     reward = -0.01
              
-        # PHASE: SELECT MOVES
-        elif self.current_phase == self.PHASE_SELECT_MOVE:
+             # If Roster empty or no choices, handled by Mask?
+             # Auto-finish if no candidates?
+
+        # PHASE: BUILD MOVES (Move 1-4)
+        elif self.current_phase == self.PHASE_BUILD_MOVE:
              # Action is Move ID
              move_name = self.moveset_generator.get_move_name(action)
              
-             # Re-validate against learnset (Safety Check)
-             # Even if masked, sometimes PPO can be weird or if mask calc differed.
              if self.build_current_mon and move_name:
-                 lvl = self.build_current_mon.spec.level
-                 valid_ids = self.moveset_generator.get_learnable_moves_ids_at_level(self.build_current_mon.spec.species, lvl)
-                 if action in valid_ids:
-                     self.build_current_moves.append(move_name)
-                 # Else: Invalid move picked (despite mask). Ignore.
+                 # Add Move
+                 self.build_current_moves.append(move_name)
+                 self.current_move_slot += 1
                  
-             self.current_slot += 1
+                 # Transition logic
+                 if self.current_move_slot >= 4:
+                     self.current_phase = self.PHASE_BUILD_ITEM
+             else:
+                 # Invalid move?
+                 pass
+                 
+        # PHASE: BUILD ITEM
+        elif self.current_phase == self.PHASE_BUILD_ITEM:
+             # Action is Item ID (Placeholder: 0=None, 1=Leftovers...)
+             # For now, ignore item logic or simple mock
+             item = None # TODO: self.item_map.get(action)
              
-             # Check if done with moves
-             if self.current_slot >= 4:
-                 # Finalize Mon
-                 if not self.build_current_moves:
-                     # Force at least one move to prevent Showdown auto-fill chaos
-                     lvl = self.build_current_mon.spec.level
-                     avail = self.moveset_generator.get_learnable_moves_at_level(self.build_current_mon.spec.species, lvl)
-                     if avail:
-                         self.build_current_moves.append(avail[0])
-                     else:
-                         self.build_current_moves.append("struggle")
-                         
+             # Finalize Member
+             if self.build_current_mon:
                  self.build_current_mon.spec.moves = self.build_current_moves
+                 self.build_current_mon.spec.item = item
                  self.party.append(self.build_current_mon)
                  
-                 # Check if team full OR no more roster candidates
-                 available = [m for m in self.roster if m not in self.party and m.alive]
+             self.current_party_slot += 1
+             
+             if self.current_party_slot >= 6:
+                 # Done Building
+                 self.current_phase = self.PHASE_DECISION
+             else:
+                 # Next Member
+                 self.current_phase = self.PHASE_BUILD_SPECIES
                  
-                 if len(self.party) >= 6 or not available:
-                     # Done building. Return to DECISION
-                     self.current_phase = self.PHASE_DECISION
-                 else:
-                     # Next Member
-                     self.current_phase = self.PHASE_SELECT_MEMBER
-                     self.current_slot = len(self.party)
-        
         return self._get_obs(), reward, terminated, truncated, info
 
     def _run_battle(self):
-         current_trainer = self.gauntlet_template.trainers[self.current_trainer_idx]
+         current_node = self.gauntlet_map.get_node(self.current_node_id)
+         if not current_node or "trainer" not in current_node.data:
+             # Should not happen in GYM node
+             return self._get_obs(), 0, True, False, {"error": "No trainer in node"}
+             
+         current_trainer = current_node.data["trainer"]
          
          # Level Scaling
          target_level = 5
@@ -317,10 +364,21 @@ class NuzlockeGauntletEnv(gym.Env):
              self.current_phase = self.PHASE_DECISION
              
          # Update Metrics with Env Context
-         metrics["trainer_idx"] = self.current_trainer_idx - 1 if win else self.current_trainer_idx # If won, we incremented. Revert for log.
-         if win: metrics["trainer_idx"] = self.current_trainer_idx - 1 # We incremented above
-         else: metrics["trainer_idx"] = self.current_trainer_idx
+         # metrics["trainer_idx"] = self.current_trainer_idx # Removed index tracking for now
          
+         # Move to Next Node
+         if win:
+             successors = self.gauntlet_map.get_successors(self.current_node_id)
+             if successors:
+                 self.current_node_id = successors[0].node_id
+                 self.current_phase = self.PHASE_STRATEGIST
+             else:
+                 # Victory!
+                 reward += 10.0
+                 terminated = True
+         else:
+             terminated = True # Wipe = Game Over
+             
          metrics["pokemon_fainted"] = deaths
          
          info = {
@@ -338,37 +396,65 @@ class NuzlockeGauntletEnv(gym.Env):
             
         elif self.current_phase == self.PHASE_DECISION:
              # 0=Fight, 1=Rebuild
-             if self.party: mask[0] = True # Can fight if party exists
+             if self.party: mask[0] = True # Can fight if party exists (Wait, Party is cleared on Rebuild. So only if Prev Party?)
+             # Issue: self.party is current ACTIVE party. On Reset it is empty.
+             # So on First Turn, self.party is empty -> Must Rebuild.
+             
+             # But if we just finished a battle, self.party has survivors.
+             
+             if not self.party:
+                 mask[0] = False # Must rebuild
+             else:
+                 mask[0] = True
+                 
              mask[1] = True # Always can rebuild
              
-        elif self.current_phase == self.PHASE_SELECT_MEMBER:
+        elif self.current_phase == self.PHASE_BUILD_SPECIES:
              # Mask valid roster indices
+             any_valid = False
              for i, m in enumerate(self.roster):
                  if m.alive and m not in self.party:
                      mask[i] = True
-                     
-        elif self.current_phase == self.PHASE_SELECT_MOVE:
-             # Mask valid move IDs for current mon
+                     any_valid = True
+             
+             # If no valid choices (all dead or party full?), we should have auto-exited.
+             # But if not, allow 0 (NO-OP/Stop)?
+             if not any_valid:
+                 mask[0] = True
+                 
+        elif self.current_phase == self.PHASE_BUILD_MOVE:
              if self.build_current_mon:
-                 # Use Cap or Current Level? Nuzlocke usually caps at next gym leader.
-                 # Let's use current_level of the Mon (which is scaled to Cap)
                  lvl = self.build_current_mon.spec.level
                  learnable_ids = self.moveset_generator.get_learnable_moves_ids_at_level(self.build_current_mon.spec.species, lvl)
-                 # Also exclude already picked moves?
                  picked_names = set(self.build_current_moves)
                  
                  for mid in learnable_ids:
                      mname = self.moveset_generator.get_move_name(mid)
                      if mname not in picked_names:
                          mask[mid] = True
-                         
+             
+             # Always allow some fallback if empty?
+             if not np.any(mask):
+                  mask[0] = True # Prevent crash
+                  
+        elif self.current_phase == self.PHASE_BUILD_ITEM:
+             mask[:] = True # All items allowed (or masked by inventory)
+                        
         return mask
 
     def _get_obs(self):
         # 1. Opponent Preview
         opp_preview = np.zeros((6, 14), dtype=np.int32)
-        if self.current_trainer_idx < len(self.gauntlet_template.trainers):
-            trainer = self.gauntlet_template.trainers[self.current_trainer_idx]
+        if self.current_node_id:
+             node = self.gauntlet_map.get_node(self.current_node_id)
+             if node and "trainer" in node.data:
+                 trainer = node.data["trainer"]
+             else:
+                 trainer = None
+        else:
+            trainer = None
+            
+        if trainer:
             for i, mon in enumerate(trainer.team[:6]):
                 # Encode Types
                 types = self.moveset_generator.get_types(mon.species)
@@ -396,10 +482,19 @@ class NuzlockeGauntletEnv(gym.Env):
         for i, m in enumerate(self.party):
             party_levels[i] = m.spec.level
 
+        # Determine slot_idx to show based on phase
+        obs_slot = 0
+        if self.current_phase == self.PHASE_BUILD_SPECIES:
+            obs_slot = self.current_party_slot
+        elif self.current_phase == self.PHASE_BUILD_MOVE:
+            obs_slot = self.current_move_slot
+            
         return {
             "phase": self.current_phase,
-            "slot_idx": self.current_slot,
-            "trainer_idx": self.current_trainer_idx,
+            "slot_idx": obs_slot,
+            "node_idx": 0, # Placeholder
+            "map_state": np.zeros(10, dtype=np.float32),
+            "risk_vector": np.zeros(6, dtype=np.float32),
             "roster_count": sum(1 for m in self.roster if m.alive),
             "party_levels": party_levels,
             "opponent_preview": opp_preview

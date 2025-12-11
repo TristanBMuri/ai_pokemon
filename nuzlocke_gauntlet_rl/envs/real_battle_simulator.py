@@ -203,6 +203,13 @@ class RealBattleSimulator(BattleSimulator):
                 
             obs, reward, done, truncated, info = self.env.step(action)
             
+            # Enforce 200 Turn Limit
+            battle = getattr(self.pz_env, "battle1", None) or getattr(self.pz_env, "battle", None)
+            if battle and battle.turn > 200:
+                print("Turn Limit Exceeded (200). Truncating.")
+                truncated = True
+                # Penalize? Handled by caller via metrics or we can return specific info.
+            
         # Battle over.
         # Get result.
         battle = getattr(self.pz_env, "battle1", None)
