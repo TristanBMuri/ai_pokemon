@@ -14,9 +14,25 @@ import uuid
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    # Register the function so Ray pickling works better (optional but good practice)
-    # register_env("dojo_env", env_creator)
     pass
+
+# ==============================================================================
+# CONFIGURATION & SCALING
+# ==============================================================================
+# 1. PARALLEL WORKERS (Ray "num_env_runners")
+#    - How many separate python processes to spawn to run battles?
+#    - Recommendation: 4 (Safe), 20-25 (Max for 64GB RAM).
+NUM_PARALLEL_WORKERS = 4 
+
+# 2. ENVS PER WORKER (Ray "num_envs_per_env_runner")
+#    - How many battles happen inside EACH worker process at the same time?
+#    - Keep at 1 for this ThreadedEnv to avoid complexity.
+ENVS_PER_WORKER = 35 # max tested: 25, max possible: 40
+
+# 3. SHOWDOWN SERVERS
+#    - 4 Servers (Ports 8000-8003) are sufficient for 20+ workers.
+#    - Workers are automatically load-balanced across these ports.
+# ==============================================================================
 
 def env_creator(config):
     worker_index = config.worker_index if hasattr(config, "worker_index") else 0
@@ -71,19 +87,10 @@ if __name__ == "__main__":
             enable_env_runner_and_connector_v2=False
         )
         # PERFORMANCE & SCALING RECOMMENDATIONS:
-        # --------------------------------------
-        # 1. Worker Count: 
-        #    - Safe Max: ~20-25 workers on a 60GB RAM system (~700MB RAM/worker).
-        #    - CPU Limit: Can scale up to (Logical Cores - 2).
-        # 2. Showdown Servers:
-        #    - 4 Servers (Ports 8000-8003) are sufficient for 20+ workers.
-        #    - Multiple workers can share the same port safely.
-        # 3. Batch Size:
-        #    - Use 2048 for stable PPO updates.
-        #    - Throughput: ~815 env_steps/sec with 4 workers.
+        # See "CONFIGURATION & SCALING" section above.
         .env_runners(
-            num_env_runners=4, # 4 Parallel Workers (Safe Default)
-            num_envs_per_env_runner=1,
+            num_env_runners=NUM_PARALLEL_WORKERS, 
+            num_envs_per_env_runner=ENVS_PER_WORKER,
             sample_timeout_s=600,
             rollout_fragment_length="auto"
         )

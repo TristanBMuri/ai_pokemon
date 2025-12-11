@@ -74,7 +74,7 @@ For real-time monitoring and deep dives.
 
 ```bash
 # Start TensorBoard
-tensorboard --logdir ./tmp/manager/
+uv run tensorboard --logdir ./tmp/manager/
 ```
 Open `http://localhost:6006` in your browser. Look for the **Custom** tab to see:
 - `custom/win_rate`: Rolling average win rate.
