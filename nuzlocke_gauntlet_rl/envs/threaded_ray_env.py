@@ -76,7 +76,7 @@ class BridgePlayer(Player):
         
         # Special signal to stop?
         if action == "STOP":
-            return "/forfeit"
+            return self.create_order("/forfeit")
             
         # Convert Action to Move
         # We need the action space wrapper logic here or just raw mapping.
@@ -100,7 +100,21 @@ class BridgePlayer(Player):
             return self.create_order(random.choice(battle.available_moves))
         if battle.available_switches:
             return self.create_order(random.choice(battle.available_switches))
-        return self.choose_default_move(battle)
+        
+        # Fallback: If no moves/switches available, try default, but catch potential errors
+        # If we are stuck, forfeit to break the deadlock and restart episode
+        try:
+             return self.choose_default_move(battle)
+        except Exception as e:
+             # DEBUG: Log exact state to understand why
+             try:
+                 with open("deadlock.log", "a") as f:
+                     msg = f"[DEBUG-DEADLOCK] State: Moves={len(battle.available_moves)} Switches={len(battle.available_switches)} Trapped={battle.trapped} ForceSwitch={battle.force_switch} Wait={battle.wait} Mon={battle.active_pokemon}\n"
+                     f.write(msg)
+             except:
+                 pass
+             print(f"[DEBUG-DEADLOCK] Forfeiting...", flush=True)
+             return self.create_order("/forfeit")
 
     def _battle_finished_callback(self, battle):
         # When battle finishes, we need to send the final reward/observation to Ray
@@ -134,13 +148,22 @@ class BridgePlayer(Player):
         # Let's use a random chance to GC to avoid global lock contention across all workers at once
         import random
         import gc
-        if random.random() < 0.05: # 5% chance (approx every 20 battles)
+        if random.random() < 0.2: # 20% chance (approx every 5 battles)
             gc.collect()
             
-            # Optional: Log memory usage to verify stability
-            # import os, psutil
-            # process = psutil.Process(os.getpid())
-            # print(f"DEBUG PID {os.getpid()} RAM: {process.memory_info().rss / 1024 / 1024:.2f} MB", flush=True)
+            # INTROSPECTION DEBUGGING: Find what is growing!
+            try:
+                for name, ref in [("Player", self.player), ("Opponent", getattr(self, "opponent", None))]:
+                    if not ref: continue
+                    for attr_name, attr_val in ref.__dict__.items():
+                         if isinstance(attr_val, (dict, list, set, tuple)):
+                             size = len(attr_val)
+                             if size > 100: # Suspiciously large
+                                 # Write to log to avoid spamming console
+                                 with open("memory_leak.log", "a") as f:
+                                     f.write(f"[LEAK-DETECT] {name}.{attr_name}: {size} items\n")
+            except:
+                pass
         
         # We don't wait for an action here because the episode is over.
         pass

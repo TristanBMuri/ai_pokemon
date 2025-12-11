@@ -84,7 +84,8 @@ if __name__ == "__main__":
     print("STARTING THREADED RAY DOJO...", flush=True)
     
     # Using default Ray init (auto-detect resources)
-    ray.init(ignore_reinit_error=True)
+    # Disable dashboard to prevent metrics buffering leak (connection errors seen in logs)
+    ray.init(ignore_reinit_error=True, include_dashboard=False)
     
     algo = (
         PPOConfig()
@@ -131,9 +132,9 @@ if __name__ == "__main__":
     import time
     start_time = time.time()
     
-    # Training Loop (Increased to 100000 for longer run)
+    # Training Loop (Increased to 10000 for longer run)
     try:
-        for i in range(100000):
+        for i in range(10000):
             iter_start = time.time()
             result = algo.train()
             iter_dur = time.time() - iter_start
