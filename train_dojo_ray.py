@@ -32,6 +32,12 @@ ENVS_PER_WORKER = 35 # max tested: 25, max possible: 40
 # 3. SHOWDOWN SERVERS
 #    - 4 Servers (Ports 8000-8003) are sufficient for 20+ workers.
 #    - Workers are automatically load-balanced across these ports.
+
+# 4. CHECKPOINT RESTORATION
+#    - Path to a checkpoint directory to resume training from.
+#    - Example: "/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo"
+#    - Set to None to start fresh.
+CHECKPOINT_PATH = "/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo"
 # ==============================================================================
 
 def env_creator(config):
@@ -111,12 +117,21 @@ if __name__ == "__main__":
         .framework("torch")
         .build()
     )
+
+    if CHECKPOINT_PATH and os.path.exists(CHECKPOINT_PATH):
+        print(f"Restoring checkpoint from {CHECKPOINT_PATH}...", flush=True)
+        try:
+            algo.restore(CHECKPOINT_PATH)
+            print("Checkpoint restored successfully!", flush=True)
+        except Exception as e:
+             print(f"Failed to restore checkpoint: {e}", flush=True)
     
     print("Training Started...", flush=True)
     import time
     start_time = time.time()
     
-    for i in range(100):
+    # Training Loop (Increased to 1000 for longer run)
+    for i in range(100000):
         iter_start = time.time()
         result = algo.train()
         iter_dur = time.time() - iter_start
