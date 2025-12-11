@@ -100,7 +100,7 @@ class BridgePlayer(Player):
             return self.create_order(random.choice(battle.available_moves))
         if battle.available_switches:
             return self.create_order(random.choice(battle.available_switches))
-        return self.create_order("/skip")
+        return self.choose_default_move(battle)
 
     def _battle_finished_callback(self, battle):
         # When battle finishes, we need to send the final reward/observation to Ray
@@ -119,7 +119,28 @@ class BridgePlayer(Player):
         # poke-env keeps all battles in `self._battles` by default.
         if battle.battle_tag in self._battles:
             del self._battles[battle.battle_tag]
-            # print(f"DEBUG: Cleared battle {battle.battle_tag} from memory", flush=True)
+            
+        # FIX: Also clear the OPPONENT'S battle history, as it lives in the same process!
+        if hasattr(self, "opponent") and battle.battle_tag in self.opponent._battles:
+             del self.opponent._battles[battle.battle_tag]
+            
+        # AGGRESSIVE CLEANUP & LOGGING
+        # Periodically force GC to reclaim circular references
+        if len(self._battles) == 0: # Should be empty now
+             pass
+        
+        # We can implement a counter if we want, but for now let's just GC occasionally
+        # Since we are in a callback, we don't have easy access to a counter unless we add one to self
+        # Let's use a random chance to GC to avoid global lock contention across all workers at once
+        import random
+        import gc
+        if random.random() < 0.05: # 5% chance (approx every 20 battles)
+            gc.collect()
+            
+            # Optional: Log memory usage to verify stability
+            # import os, psutil
+            # process = psutil.Process(os.getpid())
+            # print(f"DEBUG PID {os.getpid()} RAM: {process.memory_info().rss / 1024 / 1024:.2f} MB", flush=True)
         
         # We don't wait for an action here because the episode is over.
         pass

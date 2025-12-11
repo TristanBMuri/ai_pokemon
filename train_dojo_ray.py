@@ -131,20 +131,32 @@ if __name__ == "__main__":
     import time
     start_time = time.time()
     
-    # Training Loop (Increased to 1000 for longer run)
-    for i in range(100000):
-        iter_start = time.time()
-        result = algo.train()
-        iter_dur = time.time() - iter_start
+    # Training Loop (Increased to 100000 for longer run)
+    try:
+        for i in range(100000):
+            iter_start = time.time()
+            result = algo.train()
+            iter_dur = time.time() - iter_start
+            
+            # Calculate throughput
+            total_steps = result.get("timesteps_total", 0)
+            episode_reward = result.get('env_runners', {}).get('episode_reward_mean', 0.0)
+            episode_len = result.get('env_runners', {}).get('episode_len_mean', 0.0)
+            
+            print(f"Iter {i}: reward={episode_reward:.2f} len={episode_len:.2f} "
+                  f"dur={iter_dur:.2f}s total_steps={total_steps}", flush=True)
+            
+            if i % 5 == 0:
+                checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo")
+                print(f"Saved checkpoint to {checkpoint_dir}", flush=True)
+                
+    except KeyboardInterrupt:
+        print("\nStopping training (Ctrl+C detected)...", flush=True)
+        # Optional: Save a final checkpoint on exit
+        checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo")
+        print(f"Saved final checkpoint to {checkpoint_dir}", flush=True)
         
-        # Calculate throughput
-        total_steps = result.get("timesteps_total", 0)
-        episode_reward = result.get('env_runners', {}).get('episode_reward_mean', 0.0)
-        episode_len = result.get('env_runners', {}).get('episode_len_mean', 0.0)
-        
-        print(f"Iter {i}: reward={episode_reward:.2f} len={episode_len:.2f} "
-              f"dur={iter_dur:.2f}s total_steps={total_steps}", flush=True)
-        
-        if i % 5 == 0:
-            checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo")
-            print(f"Saved checkpoint to {checkpoint_dir}", flush=True)
+    finally:
+        print("Shutting down Ray...", flush=True)
+        ray.shutdown()
+        print("Ray shutdown complete.", flush=True)
