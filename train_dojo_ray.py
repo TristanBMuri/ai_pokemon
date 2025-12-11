@@ -70,8 +70,19 @@ if __name__ == "__main__":
             enable_rl_module_and_learner=False, 
             enable_env_runner_and_connector_v2=False
         )
+        # PERFORMANCE & SCALING RECOMMENDATIONS:
+        # --------------------------------------
+        # 1. Worker Count: 
+        #    - Safe Max: ~20-25 workers on a 60GB RAM system (~700MB RAM/worker).
+        #    - CPU Limit: Can scale up to (Logical Cores - 2).
+        # 2. Showdown Servers:
+        #    - 4 Servers (Ports 8000-8003) are sufficient for 20+ workers.
+        #    - Multiple workers can share the same port safely.
+        # 3. Batch Size:
+        #    - Use 2048 for stable PPO updates.
+        #    - Throughput: ~815 env_steps/sec with 4 workers.
         .env_runners(
-            num_env_runners=4, # 4 Parallel Workers
+            num_env_runners=4, # 4 Parallel Workers (Safe Default)
             num_envs_per_env_runner=1,
             sample_timeout_s=600,
             rollout_fragment_length="auto"
