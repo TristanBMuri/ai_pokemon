@@ -27,6 +27,3 @@ runs/
 # Aider
 .aider*
 
-# Local Data/Tmp
-tmp/
-pokemon-showdown/

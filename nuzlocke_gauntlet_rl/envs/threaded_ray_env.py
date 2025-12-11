@@ -115,6 +115,12 @@ class BridgePlayer(Player):
         obs = self.embedder.embed_battle(battle, risk_token=self.current_risk)
         self.obs_queue.put((obs, reward, terminated, truncated, info))
         
+        # MEMORY LEAK FIX: Explicitly remove the finished battle from the dictionary
+        # poke-env keeps all battles in `self._battles` by default.
+        if battle.battle_tag in self._battles:
+            del self._battles[battle.battle_tag]
+            # print(f"DEBUG: Cleared battle {battle.battle_tag} from memory", flush=True)
+        
         # We don't wait for an action here because the episode is over.
         pass
 

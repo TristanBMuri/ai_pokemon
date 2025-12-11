@@ -9,6 +9,7 @@ from poke_env import AccountConfiguration, ServerConfiguration
 from poke_env.teambuilder import ConstantTeambuilder
 import logging
 import uuid
+import os
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -21,13 +22,13 @@ if __name__ == "__main__":
 # ==============================================================================
 # 1. PARALLEL WORKERS (Ray "num_env_runners")
 #    - How many separate python processes to spawn to run battles?
-#    - Recommendation: 4 (Safe), 20-25 (Max for 64GB RAM).
-NUM_PARALLEL_WORKERS = 4 
+#    - Recommendation: 20-25 (Safe), 35 (Aggressive - Risk of OOM).
+NUM_PARALLEL_WORKERS = 30
 
 # 2. ENVS PER WORKER (Ray "num_envs_per_env_runner")
 #    - How many battles happen inside EACH worker process at the same time?
 #    - Keep at 1 for this ThreadedEnv to avoid complexity.
-ENVS_PER_WORKER = 35 # max tested: 25, max possible: 40
+ENVS_PER_WORKER = 1 # Keep at 1. Scale NUM_PARALLEL_WORKERS instead.
 
 # 3. SHOWDOWN SERVERS
 #    - 4 Servers (Ports 8000-8003) are sufficient for 20+ workers.
