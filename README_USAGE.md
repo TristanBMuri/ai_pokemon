@@ -106,3 +106,40 @@ uv run python evaluate_manager.py --model_name ppo_manager_v4 --episodes 10
 - **"Connection Refused"**: Ensure `node pokemon-showdown 8000` is running.
 - **"KeyError: calyrexi"**: The roster filter should handle this, but if new invalid species appear, check `nuzlocke_env.py` filtering logic.
 - **"sb3-contrib not found"**: Run `uv sync` to install the new dependencies for LSTM.
+
+## 7. Ray Distributed Training (Dojo) - v0.9
+
+To scale training massively, we use Ray RLlib with a "Dojo" setup where agents fight diverse opponents across multiple tiers.
+
+### Features
+- **Multi-Server Support**: Automatically spawns local Showdown instances on ports 8000+ for each worker.
+- **Curriculum Learning**: Opponent difficulty adapts to agent win rate.
+    - < 40% WR: **Simple Heuristics** (Easy)
+    - 40-80% WR: Mixed
+    - > 80% WR: **Radical Red AI** (Hard/Competitive, uses switch prediction and damage calc)
+- **Multi-Tier**: Trains on Gen 9 OU, Ubers, UU, RU, NU, PU, LC, and Gen 8-6 OU randomly.
+- **Memory Optimized**: Uses lightweight logic engines to support 30+ parallel workers on 64GB RAM.
+
+### Running the Dojo
+This script handles everything (server spawning, training, logging).
+
+```bash
+# Run with defaults (20 workers, 1 envs/worker)
+# Note: Ensure you have 'gputil' installed if using GPU monitoring
+uv run python train_dojo_ray.py
+```
+
+### TensorBoard Metrics
+The Dojo logs detailed metrics under the `ray/tune` directory. Run:
+
+```bash
+uv run tensorboard --logdir ~/ray_results/
+```
+
+**Key Metrics to Watch:**
+- `custom_metrics/agent_win_rate_mean`: Global win rate.
+- `custom_metrics/opponent_appearance_Simple_mean`: % of battles against Easy AI.
+- `custom_metrics/opponent_appearance_Radical_mean`: % of battles against Hard AI.
+    - *Goal*: You want "Radical" appearance to increase as the agent gets better.
+- `episode_reward_mean`: Approx 1.0 = Win, -1.0 = Loss (differs by shaping).
+- `ray/tune/perf/ram_util_percent`: Monitor system memory stability.

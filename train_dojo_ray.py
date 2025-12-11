@@ -10,12 +10,14 @@ os.environ["RAY_DEDUP_LOGS"] = "0" # Keep full logs for debugging
 
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
+from ray.rllib.algorithms.callbacks import DefaultCallbacks
 from ray.tune.registry import register_env
 from nuzlocke_gauntlet_rl.envs.threaded_ray_env import ThreadedBattleEnv
 from nuzlocke_gauntlet_rl.data.smogon import SmogonDataFetcher
-from poke_env.player import SimpleHeuristicsPlayer
+from nuzlocke_gauntlet_rl.players.heuristics import RadicalRedLogic, SimpleHeuristicsLogic
+from poke_env.player import Player
 from poke_env import AccountConfiguration, ServerConfiguration
-from poke_env.teambuilder import ConstantTeambuilder
+from poke_env.teambuilder import ConstantTeambuilder, Teambuilder
 import logging
 import uuid
 import os
@@ -32,7 +34,7 @@ if __name__ == "__main__":
 # 1. PARALLEL WORKERS (Ray "num_env_runners")
 #    - How many separate python processes to spawn to run battles?
 #    - Recommendation: 20-25 (Safe), 35 (Aggressive - Risk of OOM).
-NUM_PARALLEL_WORKERS = 30
+NUM_PARALLEL_WORKERS = 35
 
 # 2. ENVS PER WORKER (Ray "num_envs_per_env_runner")
 #    - How many battles happen inside EACH worker process at the same time?
@@ -60,32 +62,184 @@ def env_creator(config):
     server_config = ServerConfiguration(server_url, None)
     
     # Smogon Data
-    smogon = SmogonDataFetcher()
-    agent_team_str = smogon.generate_team()
+    # Load multiple tiers for diversity
+    # NOTE: The first battle might take a few seconds to download these if not cached.
+    # gen9ubers (plural) and gen9uu
+    # Added Gen 8-6 OU for historical diversity
+    # Added Gen 9 RU, NU, PU, LC for power diversity (Lower Tiers & Level 5 battles)
+    all_formats = [
+        "gen9ou", "gen9ubers", "gen9uu",
+        "gen9ru", "gen9nu", "gen9pu", "gen9lc", 
+        "gen8ou", "gen7ou", "gen6ou"
+    ]
+    smogon = SmogonDataFetcher(formats=all_formats)
+    
+    # Tier Synchronization logic
+    import random
+    class TierManager:
+        def __init__(self, formats):
+             self.formats = formats
+             self.current_tier = "gen9ou" # Default
+             
+        def pick_new_tier(self):
+             self.current_tier = random.choice(self.formats)
+             return self.current_tier
+
+    tier_manager = TierManager(all_formats)
+
+    # Agent Teambuilder (Calls Step)
+    class AgentTeambuilder(Teambuilder):
+         def __init__(self, smogon, tier_manager):
+             self.smogon = smogon
+             self.tier_manager = tier_manager
+             
+         def yield_team(self):
+             # 1. Decide Tier for this Match
+             new_tier = self.tier_manager.pick_new_tier()
+             print(f"[Match Setup] Selected Tier: {new_tier}", flush=True)
+             
+             # 2. Generate Team
+             raw = self.smogon.generate_team(format_id=new_tier)
+             parsed = self.parse_showdown_team(raw)
+             return self.join_team(parsed)
+
+    agent_team = AgentTeambuilder(smogon, tier_manager)
     
     # Opponent Setup
     # ThreadedBattleEnv creates the opponent internally on the background thread
-    opponent_cls = SimpleHeuristicsPlayer
+    # opponent_cls = SimpleHeuristicsPlayer # Removed
     
     # We define a custom Opponent class to inject the team
-    class DojoOpponent(SimpleHeuristicsPlayer):
-         def __init__(self, **kwargs):
-             super().__init__(**kwargs)
-             self._team = ConstantTeambuilder(smogon.generate_team())
+    class DynamicSmogonTeambuilder(Teambuilder):
+        def __init__(self, smogon_fetcher, tier_manager):
+             self.smogon = smogon_fetcher
+             self.tier_manager = tier_manager
+             
+        def yield_team(self):
+             # Use the SAME tier that the Agent just selected
+             current_tier = self.tier_manager.current_tier
+             
+             # Generate raw Showdown text
+             raw_team = self.smogon.generate_team(format_id=current_tier)
+             # Parse and Pack it (removes newlines causing protocol errors)
+             parsed = self.parse_showdown_team(raw_team)
+             return self.join_team(parsed)
+
+    # Mixed Opponent with Curriculum
+    class CurriculumDojoOpponent(Player):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            # Two engines - Lightweight Logic Classes (No Player overhead)
+            self.simple_ai = SimpleHeuristicsLogic()
+            self.radical_ai = RadicalRedLogic()
+            self._team = DynamicSmogonTeambuilder(smogon, tier_manager)
+            
+            # Curriculum State
+            self.agent_wins = [] # Rolling buffer of bools (True = Agent Won)
+            self.radical_prob = 0.0
+            
+        def choose_move(self, battle):
+            # Decide for this turn based on pre-selected mode?
+            # Or mix per turn? Usually per-battle is cleaner.
+            # But here we are inside choose_move.
+            # We should decide "mode" at start of battle.
+            # Hack: Store mode in battle object or attribute?
+            # Or just check randomly every turn? No, consistency is good.
+            # Use `battle.turn` == 1 to decide?
+            
+            # Better: Decide based on probability derived from win rate
+            
+            # If we don't have a mode for this battle ID yet, pick one
+            if not hasattr(self, "current_battle_mode") or self.current_battle_mode[0] != battle.battle_tag:
+                 # Pick mode
+                 roll = random.random()
+                 if roll < self.radical_prob:
+                     mode = "radical"
+                 else:
+                     mode = "simple"
+                 self.current_battle_mode = (battle.battle_tag, mode)
+                 # Log only occasionally to avoid spam
+                 if random.random() < 0.05:
+                     print(f"[Curriculum] WR: {self._get_agent_wr():.2f} -> Mode: {mode}", flush=True)
+            else:
+                 mode = self.current_battle_mode[1]
+
+            if mode == "radical":
+                return self.radical_ai.choose_move(battle)
+            else:
+                return self.simple_ai.choose_move(battle)
+
+        @property
+        def active_bot_name(self):
+             if hasattr(self, "current_battle_mode"):
+                 return self.current_battle_mode[1].capitalize() # "Radical" or "Simple"
+             return "Unknown"
+
+        def _battle_finished(self, battle, won):
+            # won = True means WE (Opponent) won -> Agent Lost
+            agent_won = not won
+            self.agent_wins.append(agent_won)
+            if len(self.agent_wins) > 50: self.agent_wins.pop(0)
+            
+            # Update Probability
+            wr = self._get_agent_wr()
+            # Scaling:
+            # < 40% WR: 0% Radical
+            # > 80% WR: 100% Radical
+            # Linear in between
+            if wr < 0.4:
+                self.radical_prob = 0.0
+            elif wr > 0.8:
+                self.radical_prob = 1.0
+            else:
+                self.radical_prob = (wr - 0.4) * 2.5 # (0.4->0, 0.6->0.5, 0.8->1.0)
+                
+        def _get_agent_wr(self):
+            if not self.agent_wins: return 0.5 # Assume balanced start
+            return sum(self.agent_wins) / len(self.agent_wins)
+            
+        # teambuilder property is inherited from Player and uses self._team
+        # def teambuilder(self):
+        #      return self._team
+
+    class DojoOpponent(CurriculumDojoOpponent):
+         pass
              
     opponent_config = AccountConfiguration("Placeholder", None) # Name set dynamically in Env
     
     # Agent Config
     agent_config = AccountConfiguration("Placeholder", None) # Name set dynamically
-    agent_team = ConstantTeambuilder(agent_team_str) 
+    # agent_team is already defined above as Teambuilder instance
     
     return ThreadedBattleEnv(
         agent_config=agent_config,
-        agent_team=agent_team,
+        agent_team=agent_team, # Now passing Teambuilder instance, not constant
         opponent_cls=DojoOpponent,
         opponent_config=opponent_config,
         server_configuration=server_config
     )
+
+class MetricsCallback(DefaultCallbacks):
+    def on_episode_end(self, *, worker, base_env, policies, episode, env_index, **kwargs):
+        if not episode.last_info_for(): return
+        info = episode.last_info_for()
+        
+        # General Opponent Appearance Logging
+        # We assume a known list of bots for now, or discover them?
+        # Fixed list ensures 0s are logged correctly for averages.
+        KNOWN_BOTS = ["Simple", "Radical"]
+        
+        active_bot = info.get("opponent_bot_name", "Unknown")
+        
+        for bot in KNOWN_BOTS:
+             # Log 1.0 if this bot was used, 0.0 otherwise
+             # This makes the "mean" in TensorBoard equal to the usage percentage (e.g. 0.3 = 30%)
+             is_used = 1.0 if bot == active_bot else 0.0
+             episode.custom_metrics[f"opponent_appearance_{bot}"] = is_used
+             
+        # Also log the raw difficulty/prob if available
+        if "opponent_radical_prob" in info:
+             episode.custom_metrics["opponent_radical_prob"] = info["opponent_radical_prob"]
 
 register_env("dojo_env", env_creator)
 
@@ -121,6 +275,7 @@ if __name__ == "__main__":
     algo = (
         PPOConfig()
         .environment(env="dojo_env", env_config={})
+        .callbacks(MetricsCallback)
         .api_stack(
             enable_rl_module_and_learner=False, 
             enable_env_runner_and_connector_v2=False
@@ -146,6 +301,7 @@ if __name__ == "__main__":
             num_epochs=5, # Renamed from num_sgd_iter as per warning
             lr=5e-5,
             gamma=0.99,
+            entropy_coeff=0.01, # INCREASED ENTROPY to prevent policy collapse
         )
         .framework("torch")
         .build()

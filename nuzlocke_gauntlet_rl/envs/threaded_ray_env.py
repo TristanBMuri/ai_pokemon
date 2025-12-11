@@ -55,8 +55,16 @@ class BridgePlayer(Player):
         return reward
 
     async def choose_move(self, battle):
-        # 1. Embed State
-        obs = self.embedder.embed_battle(battle, risk_token=self.current_risk)
+        # 1. Embed State with Perfect Info
+        opponent_team_data = None
+        if hasattr(self, 'opponent') and self.opponent:
+            # Find the battle from opponent's perspective
+            # battle.battle_tag is shared? Usually yes.
+            op_battle = self.opponent.battles.get(battle.battle_tag)
+            if op_battle:
+                 opponent_team_data = op_battle.team # Perfect Info
+        
+        obs = self.embedder.embed_battle(battle, risk_token=self.current_risk, opponent_team=opponent_team_data)
         
         # 2. Calculate continuous reward/term/trunc
         reward = self.calc_reward(battle)
@@ -129,6 +137,13 @@ class BridgePlayer(Player):
         terminated = True
         truncated = False
         info = {}
+        
+        # CURRICULUM LOGGING:
+        # Check if opponent has curriculum stats
+        if hasattr(self.opponent, "radical_prob"):
+             info["opponent_radical_prob"] = self.opponent.radical_prob
+        if hasattr(self.opponent, "active_bot_name"):
+             info["opponent_bot_name"] = self.opponent.active_bot_name
         
         # Send final transition
         # We need a dummy observation or the final state
@@ -268,10 +283,14 @@ class ThreadedBattleEnv(Env):
                 import time
                 start_wait = time.time()
                 while not hasattr(self.player.ps_client, "websocket") or self.player.ps_client.websocket is None:
-                    if time.time() - start_wait > 5:
-                         break
+                    if time.time() - start_wait > 10:
+                        logging.error(f"[{self.username}] Failed to connect to Showdown (Websocket missing).")
+                        return # Abort main_loop
                     await asyncio.sleep(0.01)
                 
+                if not hasattr(self.player.ps_client, "websocket") or self.player.ps_client.websocket is None:
+                     return
+
                 # Use ps_client.log_in which uses the correct method name
                 await self.player.ps_client.log_in(self.agent_config)
                 

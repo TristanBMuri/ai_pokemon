@@ -11,35 +11,57 @@ class SmogonDataFetcher:
     Fetches and parses Smogon Chaos data to generate realistic random teams.
     """
     BASE_URL = "https://www.smogon.com/stats"
-    
-    def __init__(self, cache_dir: str = "data/smogon_cache", format_id: str = "gen9ou", rating: int = 1695):
+    _shared_data: Dict[str, Dict] = {} # Class-level cache shared by all instances in process
+    _shared_lock = Lock()
+
+    def __init__(self, cache_dir: str = "data/smogon_cache", formats: List[str] = None, rating: int = 1695):
         self.cache_dir = cache_dir
-        self.format_id = format_id
+        self.formats = formats if formats else ["gen9ou"]
         self.rating = rating
-        self.data: Dict = {}
         self._lock = Lock()
         
         os.makedirs(self.cache_dir, exist_ok=True)
-        self.load_data()
+        self.load_all_data()
         
-    def load_data(self):
+    def load_all_data(self):
+        for fmt in self.formats:
+            self.load_data_for_format(fmt)
+
+    @property
+    def data(self):
+        return self._shared_data
+
+    def load_data_for_format(self, format_id: str):
         """Loads data from cache or downloads it."""
-        filename = f"{self.format_id}-{self.rating}.json"
-        path = os.path.join(self.cache_dir, filename)
-        
-        if os.path.exists(path):
-            print(f"Loading Smogon data from {path}...")
-            with open(path, "r") as f:
-                self.data = json.load(f)
-        else:
-            print(f"Downloading Smogon data to {path}...")
-            self.download_data(path)
+        # Check if already loaded in shared cache
+        if format_id in self._shared_data:
+            return
+
+        with self._shared_lock:
+            # Double-check locking pattern
+            if format_id in self._shared_data:
+                return
+                
+            filename = f"{format_id}-{self.rating}.json"
+            path = os.path.join(self.cache_dir, filename)
             
-    def download_data(self, path: str):
+            if os.path.exists(path):
+                print(f"Loading Smogon data for {format_id} from {path}...")
+                with open(path, "r") as f:
+                    self._shared_data[format_id] = json.load(f)
+            else:
+                print(f"Downloading Smogon data for {format_id} to {path}...")
+                self.download_data(format_id, path)
+                # After download, load it
+                if os.path.exists(path):
+                     with open(path, "r") as f:
+                        self._shared_data[format_id] = json.load(f)
+        
+    def download_data(self, format_id: str, path: str):
         # Determine latest stats URL (Hardcoded for now to avoid scraping index directory)
         # Using 2024-11 as a recent safe bet, or fallback to older if needed.
-        date = "2024-11" 
-        url = f"{self.BASE_URL}/{date}/chaos/{self.format_id}-{self.rating}.json"
+        date = "2025-11" 
+        url = f"{self.BASE_URL}/{date}/chaos/{format_id}-{self.rating}.json"
         
         try:
             self._download_url(url, path)
@@ -47,16 +69,26 @@ class SmogonDataFetcher:
             print(f"Failed to download from {url}: {e}")
             # Fallback to previous month
             date = "2024-10"
-            url = f"{self.BASE_URL}/{date}/chaos/{self.format_id}-{self.rating}.json"
+            url = f"{self.BASE_URL}/{date}/chaos/{format_id}-{self.rating}.json"
             print(f"Retrying with {url}...")
             try:
                 self._download_url(url, path)
             except Exception as e2:
-                print(f"Failed fallback: {e2}")
+                print(f"Failed fallback date: {e2}")
+                # Try rating 0 (often more available) if not already
+                if self.rating != 0:
+                     url = f"{self.BASE_URL}/{date}/chaos/{format_id}-0.json"
+                     print(f"Retrying with rating 0: {url}...")
+                     try:
+                         self._download_url(url, path)
+                         return
+                     except Exception as e3:
+                         print(f"Failed rating 0 fallback: {e3}")
+                
                 # Create empty dummy data to prevent crash
-                self.data = {"data": {}}
+                self.data[format_id] = {"data": {}}
                 with open(path, "w") as f:
-                    json.dump(self.data, f)
+                    json.dump({"data": {}}, f)
                     
     def _download_url(self, url: str, path: str):
          with urllib.request.urlopen(url) as response:
@@ -64,7 +96,12 @@ class SmogonDataFetcher:
              data = json.loads(content)
              with open(path, "w") as f:
                  json.dump(data, f)
-             self.data = data
+             # Just updated storage via load_data_for_format logic mostly, but here we set it explicitly if needed
+             # self.data is updated by the caller usually? No, download_url is helper.
+             # We need to ensure self.data is populated in the wrapper.
+             # Actually, download_url just downloads. load_data reads it back.
+             # But let's return it or set it.
+             pass
              
     def get_weighted_choice(self, items: Dict[str, float]) -> Optional[str]:
         if not items: return None
@@ -79,14 +116,23 @@ class SmogonDataFetcher:
                 return item
         return list(items.keys())[-1]
         
-    def generate_team(self, size: int = 6) -> str:
+    def generate_team(self, size: int = 6, format_id: str = None) -> str:
         """
         Generates a team string in Showdown format.
         """
-        if "data" not in self.data:
-            return "" # No data
+        if not format_id:
+            # Pick random format from loaded ones
+            format_id = random.choice(self.formats)
             
-        usage_data = self.data["data"]
+        if format_id not in self.data:
+            # Try to load it?
+            self.load_data_for_format(format_id)
+            
+        data_source = self.data.get(format_id)
+        if not data_source or "data" not in data_source:
+             return ""
+            
+        usage_data = data_source["data"]
         
         # Pick 6 distinct pokemon based on raw usage?
         # Chaos data keys are species names. Values are usage objects.
@@ -101,8 +147,10 @@ class SmogonDataFetcher:
         
         # Filter out weird stuff
         valid_mons = [m for m in all_mons if usage_data[m].get("usage", 0) > 0.01] # >1% usage
-        if not valid_mons: valid_mons = all_mons
-        
+        if not valid_mons: 
+            print(f"Warning: No valid mons found for format {format_id}")
+            return ""
+
         # Simple random sample purely by index might ignore usage weights, 
         # but let's just pick from weighted distribution of usage.
         weights = [usage_data[m]["usage"] for m in valid_mons]
@@ -119,17 +167,30 @@ class SmogonDataFetcher:
             
             # 1. Moves
             # "Moves" is Dict[MoveName, Weight]
-            moves = []
+            # Filter valid moves first (exclude empty strings common in raw stats)
             move_pool = info.get("Moves", {})
-            # Pick 4 distinct moves
-            # For simplicity, pick top 4 weighted or weighted random?
-            # Weighted random 4 times.
-            attempts = 0
-            while len(moves) < 4 and attempts < 20:
-                m = self.get_weighted_choice(move_pool)
-                if m and m not in moves and m != "":
-                    moves.append(m)
-                attempts += 1
+            valid_pool = {k: v for k, v in move_pool.items() if k and k.strip() != ""}
+            
+            moves = []
+            if valid_pool:
+                attempts = 0
+                max_moves = min(4, len(valid_pool))
+                
+                while len(moves) < max_moves and attempts < 20:
+                    m = self.get_weighted_choice(valid_pool)
+                    if m and m not in moves:
+                        moves.append(m)
+                    attempts += 1
+                
+                # Critical Fallback: Ensure at least one move
+                if not moves:
+                    # Pick absolute highest usage move
+                    best_move = max(valid_pool, key=valid_pool.get)
+                    moves.append(best_move)
+            else:
+                # No valid moves in pool? (Unlikely unless weird data)
+                # Fallback to Struggle or just ignore (Showdown might reject)
+                pass
                 
             # 2. Ability
             ability = self.get_weighted_choice(info.get("Abilities", {}))
@@ -173,7 +234,7 @@ class SmogonDataFetcher:
         return "\n\n".join(team_parts)
 
 if __name__ == "__main__":
-    fetcher = SmogonDataFetcher(format_id="gen9ou", rating=0) # 0 for general stats often available
+    fetcher = SmogonDataFetcher(formats=["gen9ou", "gen9uber", "gen9uu"], rating=0) # 0 for general stats often available
     team = fetcher.generate_team()
     print("Generated Team:")
     print(team)

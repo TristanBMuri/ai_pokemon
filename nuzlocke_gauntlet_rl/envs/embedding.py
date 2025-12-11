@@ -10,8 +10,14 @@ class BattleEmbedder:
         self.risk_token = 0 # Default
 
     def describe_embedding(self):
-        # Total dims: 47 + 16 + 12 = 75
-        dims = 75
+        # Total dims: 
+        # Base: 47 + 16 (MyMoves) + 12 (TeamHP) = 75
+        # New Perfect Info:
+        # + 16 (OpMoves) 
+        # + 5 (OpItems) 
+        # + 5 (RelativeStats: Spd, Atk/Def, SpA/SpD, Def/Atk, SpD/SpA)
+        # Total: 75 + 16 + 5 + 5 = 101
+        dims = 101
         return (
             np.zeros(dims, dtype=np.float32),
             np.ones(dims, dtype=np.float32),
@@ -19,7 +25,7 @@ class BattleEmbedder:
             np.float32
         )
 
-    def embed_battle(self, battle: AbstractBattle, risk_token=0):
+    def embed_battle(self, battle: AbstractBattle, risk_token=0, opponent_team=None):
         # Features:
         # 1. Active Mon: HP (1), Status (7), Boosts (7) -> 15
         # 2. Opponent Active Mon: HP (1), Status (7), Boosts (7) -> 15
@@ -27,58 +33,46 @@ class BattleEmbedder:
         # 4. Risk Token (3)
         # 5. Moves (4 * 4): Power, Acc, Eff, STAB -> 16
         # 6. Team HP (6 + 6) -> 12
-        # Total: 47 + 16 + 12 = 75
+        # --- NEW ---
+        # 7. Op Moves (4 * 4) -> 16
+        # 8. Op Items (5) -> 5
+        # 9. Relative Stats (5) -> 5
+        # Total: 101
         
-        # Helper to encode status
+        # ... [Helpers same as before] ...
         def encode_status(status):
-            # Status: None, BRN, FRZ, PAR, PSN, SLP, TOX
             encoding = np.zeros(7, dtype=np.float32)
-            if status is None:
-                encoding[0] = 1.0
+            if status is None: encoding[0] = 1.0
             else:
-                try:
-                    status_map = {'BRN': 1, 'FRZ': 2, 'PAR': 3, 'PSN': 4, 'SLP': 5, 'TOX': 6}
-                    idx = status_map.get(status.name, 0)
-                    encoding[idx] = 1.0
-                except:
-                    encoding[0] = 1.0
+                status_map = {'BRN': 1, 'FRZ': 2, 'PAR': 3, 'PSN': 4, 'SLP': 5, 'TOX': 6}
+                try: idx = status_map.get(status.name, 0)
+                except: idx = 0
+                encoding[idx] = 1.0
             return encoding
 
-        # Helper to encode boosts
         def encode_boosts(boosts):
             encoding = np.zeros(7, dtype=np.float32)
             keys = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']
             for i, k in enumerate(keys):
-                val = boosts.get(k, 0)
-                encoding[i] = (val + 6) / 12.0
+                encoding[i] = (boosts.get(k, 0) + 6) / 12.0
             return encoding
             
-        # Helper to encode weather
         def encode_weather(weather):
             encoding = np.zeros(9, dtype=np.float32)
-            if weather is None:
-                encoding[0] = 1.0
+            if weather is None: encoding[0] = 1.0
             else:
-                w_map = {
-                    'SUNNYDAY': 1, 'RAINDANCE': 2, 'SANDSTORM': 3, 'HAIL': 4, 'SNOW': 5,
-                    'DESOLATELAND': 6, 'PRIMORDIALSEA': 7, 'DELTASTREAM': 8
-                }
+                w_map = {'SUNNYDAY': 1, 'RAINDANCE': 2, 'SANDSTORM': 3, 'HAIL': 4, 'SNOW': 5, 'DESOLATELAND': 6, 'PRIMORDIALSEA': 7, 'DELTASTREAM': 8}
                 name = weather.name if hasattr(weather, 'name') else str(weather).upper()
-                idx = w_map.get(name, 0)
-                encoding[idx] = 1.0
+                encoding[w_map.get(name, 0)] = 1.0
             return encoding
 
-        # Helper to encode terrain
         def encode_terrain(terrain):
             encoding = np.zeros(5, dtype=np.float32)
-            if terrain is None:
-                encoding[0] = 1.0
+            if terrain is None: encoding[0] = 1.0
             else:
                 t_map = {'ELECTRIC': 1, 'GRASSY': 2, 'MISTY': 3, 'PSYCHIC': 4}
-                name = terrain.name if hasattr(terrain, 'name') else str(terrain).upper()
-                name = name.replace('_TERRAIN', '')
-                idx = t_map.get(name, 0)
-                encoding[idx] = 1.0
+                name = terrain.name if hasattr(terrain, 'name') else str(terrain).upper().replace('_TERRAIN', '')
+                encoding[t_map.get(name, 0)] = 1.0
             return encoding
 
         # Active Mon
@@ -116,35 +110,17 @@ class BattleEmbedder:
             
         # Risk
         risk_encoding = np.zeros(3, dtype=np.float32)
-        if 0 <= risk_token < 3:
-            risk_encoding[risk_token] = 1.0
+        if 0 <= risk_token < 3: risk_encoding[risk_token] = 1.0
         
-        # Moves
+        # My Moves
         moves_enc = np.zeros(16, dtype=np.float32)
         if active:
-            # Get moves. battle.available_moves are the ones we can click.
-            # But we want to encode all 4 moves if possible, or just available ones?
-            # Let's encode the 4 moves in the move slots.
-            # active.moves is a dict.
             move_list = list(active.moves.values())
             for i, move in enumerate(move_list[:4]):
-                # Power
                 power = move.base_power / 100.0
-                # Accuracy
-                acc = move.accuracy
-                if acc is True: acc = 1.0
-                else: acc = acc / 100.0
-                
-                # Effectiveness
-                eff = 1.0
-                if op:
-                    eff = op.damage_multiplier(move.type)
-                
-                # STAB
-                stab = 1.0
-                if move.type in active.types:
-                    stab = 1.5
-                    
+                acc = (move.accuracy / 100.0) if (move.accuracy is not True) else 1.0
+                eff = op.damage_multiplier(move.type) if op else 1.0
+                stab = 1.5 if move.type in active.types else 1.0
                 base_idx = i * 4
                 moves_enc[base_idx] = power
                 moves_enc[base_idx+1] = acc
@@ -153,25 +129,98 @@ class BattleEmbedder:
                 
         # Team HP
         my_team_hp = np.zeros(6, dtype=np.float32)
-        op_team_hp = np.zeros(6, dtype=np.float32)
-        
-        # My Team
-        # battle.team is a dict of mon_ident -> Pokemon
         for i, mon in enumerate(battle.team.values()):
-            if i < 6:
-                my_team_hp[i] = mon.current_hp_fraction
+             if i < 6: my_team_hp[i] = mon.current_hp_fraction
                 
-        # Opponent Team
-        # battle.opponent_team is a dict
+        op_team_hp = np.zeros(6, dtype=np.float32)
         for i, mon in enumerate(battle.opponent_team.values()):
-            if i < 6:
-                op_team_hp[i] = mon.current_hp_fraction
+             if i < 6: op_team_hp[i] = mon.current_hp_fraction
+             
+        # --- PERFECT INFO ---
+        op_moves_enc = np.zeros(16, dtype=np.float32)
+        op_items_enc = np.zeros(5, dtype=np.float32) # [Choice, LO, Sash, Leftovers, Berry/Other]
+        rel_stats_enc = np.zeros(5, dtype=np.float32) # [SpeedRatio, Atk/Def, SpA/SpD, Def/Atk, SpD/SpA]
         
+        # Try to find opponent mon in "Perfect Info" Source
+        # opponent_team is a Dict[str, Pokemon] (Assuming it's the opponent's 'battle.team' or equivalent)
+        true_op = None
+        if opponent_team and op:
+             # Find by species match (approximate if nicknames differ, but in Dojo they match)
+             # Actually, in poke-env, battle.opponent_team is partial.
+             # We passed the *Real* Player's team as opponent_team.
+             # Keys are nicknames.
+             # In Dojo, nicknames might be Species names.
+             # Let's try to match by species.
+             # 'op.species' name.
+             for mon in opponent_team.values():
+                 if mon.species == op.species:
+                     true_op = mon
+                     break
+        
+        if true_op:
+            # 1. Op Moves
+            move_list = list(true_op.moves.values())
+            for i, move in enumerate(move_list[:4]):
+                power = move.base_power / 100.0
+                acc = (move.accuracy / 100.0) if (move.accuracy is not True) else 1.0
+                # Effectiveness AGAINST ME
+                eff = active.damage_multiplier(move.type) if active else 1.0
+                stab = 1.5 if move.type in true_op.types else 1.0
+                
+                base_idx = i * 4
+                op_moves_enc[base_idx] = power
+                op_moves_enc[base_idx+1] = acc
+                op_moves_enc[base_idx+2] = eff
+                op_moves_enc[base_idx+3] = stab
+
+            # 2. Op Items
+            item = true_op.item
+            if item:
+                if 'choice' in item or ' scarf' in item or ' specs' in item or ' band' in item: op_items_enc[0] = 1.0
+                elif 'life' in item and 'orb' in item: op_items_enc[1] = 1.0
+                elif 'focus' in item and 'sash' in item: op_items_enc[2] = 1.0
+                elif 'leftovers' in item: op_items_enc[3] = 1.0
+                else: op_items_enc[4] = 1.0 # Other
+            
+            # 3. Relative Stats
+            # active.stats vs true_op.stats
+            # We need current stats (including boosts) if possible.
+            # active.stats gives current stats? Yes.
+            # true_op.stats gives current stats? Yes, if it's a Pokemon object linked to a battle.
+            # But true_op might be from a Fresh Teambuilder or the Opponent Player object.
+            # If from Opponent Player, it tracks boosts!
+            if active:
+                my_stats = active.stats
+                op_stats = true_op.stats
+                
+                # Speed Ratio (>1 if I am faster) - Log scale for stability
+                # Using simple division with clip
+                # Speed
+                s_ratio = my_stats['spe'] / (op_stats['spe'] + 0.1)
+                rel_stats_enc[0] = np.clip(s_ratio, 0, 3.0)
+                
+                # Physical Matchup: My Atk vs Op Def
+                ad_ratio = my_stats['atk'] / (op_stats['def'] + 0.1)
+                rel_stats_enc[1] = np.clip(ad_ratio, 0, 3.0)
+                
+                # Special Matchup: My SpA vs Op SpD
+                sd_ratio = my_stats['spa'] / (op_stats['spd'] + 0.1)
+                rel_stats_enc[2] = np.clip(sd_ratio, 0, 3.0)
+                
+                # Defensive Phys: My Def vs Op Atk
+                da_ratio = my_stats['def'] / (op_stats['atk'] + 0.1)
+                rel_stats_enc[3] = np.clip(da_ratio, 0, 3.0)
+                
+                 # Defensive Spec: My SpD vs Op SpA
+                ds_ratio = my_stats['spd'] / (op_stats['spa'] + 0.1)
+                rel_stats_enc[4] = np.clip(ds_ratio, 0, 3.0)
+
         return np.concatenate([
             my_hp, my_status, my_boosts,
             op_hp, op_status, op_boosts,
             weather_enc, terrain_enc,
             risk_encoding,
             moves_enc,
-            my_team_hp, op_team_hp
+            my_team_hp, op_team_hp,
+            op_moves_enc, op_items_enc, rel_stats_enc
         ])
