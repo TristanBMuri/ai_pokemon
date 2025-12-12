@@ -55,8 +55,16 @@ class BridgePlayer(Player):
         return reward
 
     async def choose_move(self, battle):
-        # 1. Embed State
-        obs = self.embedder.embed_battle(battle, risk_token=self.current_risk)
+        # 1. Embed State with Perfect Info
+        opponent_team_data = None
+        if hasattr(self, 'opponent') and self.opponent:
+            # Find the battle from opponent's perspective
+            # battle.battle_tag is shared? Usually yes.
+            op_battle = self.opponent.battles.get(battle.battle_tag)
+            if op_battle:
+                 opponent_team_data = op_battle.team # Perfect Info
+        
+        obs = self.embedder.embed_battle(battle, risk_token=self.current_risk, opponent_team=opponent_team_data)
         
         # 2. Calculate continuous reward/term/trunc
         reward = self.calc_reward(battle)
