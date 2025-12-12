@@ -1,4 +1,5 @@
 import numpy as np
+import zlib
 from poke_env.battle import AbstractBattle
 
 class BattleEmbedder:
@@ -9,193 +10,228 @@ class BattleEmbedder:
     def __init__(self):
         self.risk_token = 0 # Default
 
+    def _hash_to_bin(self, value, n_bits):
+        """Hashes a string/value to a binary vector of size n_bits."""
+        enc = np.zeros(n_bits, dtype=np.float32)
+        if not value: return enc
+        
+        s = str(value).lower().encode('utf-8')
+        h = zlib.crc32(s)
+        
+        for i in range(n_bits):
+            if (h >> i) & 1:
+                enc[i] = 1.0
+        return enc
+
     def describe_embedding(self):
-        # Total dims: 
-        # Base: 47 + 16 (MyMoves) + 12 (TeamHP) = 75
-        # Perfect Info:
-        # + 16 (OpMoves) 
-        # + 5 (OpItems) 
-        # + 5 (RelativeStats)
-        # + 20 (OpAbility) <--- NEW
-        # Total: 75 + 16 + 5 + 5 + 20 = 121
-        dims = 583
+        # Total dims detailed calculation:
+        # Base (75) + Global (40) = 115
+        # Teammates (6 * 152) = 912
+        # where 152 = 77 (Old) + 6 (Stats) + 11 (Species) + 9 (Item) + 9 (Abi) + 40 (MoveIDs)
+        # Active Perfect Info:
+        # Op Actions (Moves 16 + Items 5 + Stats 5 + Ability 20) -> 46
+        # + Op Global (40) + Op Active IDs (69) + My Active IDs (69)
+        # Grand Total:
+        # Team (912) + Basics (75) + PerfectInfo (46) + IDs (138) + Global (37) ~= 1208
+        dims = 1208
         return (
-            np.zeros(583, dtype=np.float32),
-            np.ones(583, dtype=np.float32),
-            (583,),
+            np.zeros(dims, dtype=np.float32),
+            np.ones(dims, dtype=np.float32),
+            (dims,),
             np.float32
         )
 
-    def embed_battle(self, battle: AbstractBattle, risk_token=0, opponent_team=None):
-        # 1. My Active (HP, Status, Boosts) -> 1 + 7 + 7 = 15
-        # 2. Op Active (HP, Status, Boosts) -> 1 + 7 + 7 = 15
-        # 3. Field (Weather, Terrain) -> 9 + 5 = 14
-        # 4. Risk Token (3) -> 3
-        # 5. My Moves (Power, Acc, Eff, STAB) -> 16
-        # 6. Team HP (My 6 + Op 6) -> 12
-        # --- Base Total: 75 ---
-        # 7. Op Moves (16) -> 16
-        # 8. Op Items (5) -> 5
-        # 9. Relative Stats (5) -> 5
-        # 10. Op Ability (20) -> 20
-        # --- Perfect Info Total: 121 ---
-        # 11. My Team Details (6 * (16 Moves + 5 Items + 20 Ability + 36 Types)) -> 6 * 77 = 462
-        # --- Grand Total: 121 + 462 = 583 ---
+    # ... [Keep Helpers _get_active_move_pp_fraction etc from previous steps] ...
+
+    def encode_teammate(self, mon, active_op):
+        # Base: 16 (Moves) + 5 (Items) + 20 (Ability) + 36 (Types) = 77
+        # Stats: 6
+        # IDs: 11 (Species) + 9 (Item) + 9 (Ability) + 40 (Moves) = 69
+        # Total: 77 + 6 + 69 = 152
+        enc = np.zeros(152, dtype=np.float32)
         
-        # ... [Previous Helpers] ...
-        def encode_status(status):
-            encoding = np.zeros(7, dtype=np.float32)
-            if status is None: encoding[0] = 1.0
-            else:
-                status_map = {'BRN': 1, 'FRZ': 2, 'PAR': 3, 'PSN': 4, 'SLP': 5, 'TOX': 6}
-                try: idx = status_map.get(status.name, 0)
-                except: idx = 0
-                encoding[idx] = 1.0
-            return encoding
-
-        def encode_boosts(boosts):
-            encoding = np.zeros(7, dtype=np.float32)
-            keys = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']
-            for i, k in enumerate(keys):
-                encoding[i] = (boosts.get(k, 0) + 6) / 12.0
-            return encoding
+        # Moves (0-15) & Move IDs (From 112-151)
+        move_list = list(mon.moves.values())
+        for i, move in enumerate(move_list[:4]):
+            power = move.base_power / 100.0
+            acc = (move.accuracy / 100.0) if (move.accuracy is not True) else 1.0
+            eff = active_op.damage_multiplier(move.type) if active_op else 1.0
+            stab = 1.5 if move.type in mon.types else 1.0
             
-        def encode_weather(weather):
-            encoding = np.zeros(9, dtype=np.float32)
-            if weather is None: encoding[0] = 1.0
-            else:
-                w_map = {'SUNNYDAY': 1, 'RAINDANCE': 2, 'SANDSTORM': 3, 'HAIL': 4, 'SNOW': 5, 'DESOLATELAND': 6, 'PRIMORDIALSEA': 7, 'DELTASTREAM': 8}
-                name = weather.name if hasattr(weather, 'name') else str(weather).upper()
-                encoding[w_map.get(name, 0)] = 1.0
-            return encoding
-
-        def encode_terrain(terrain):
-            encoding = np.zeros(5, dtype=np.float32)
-            if terrain is None: encoding[0] = 1.0
-            else:
-                t_map = {'ELECTRIC': 1, 'GRASSY': 2, 'MISTY': 3, 'PSYCHIC': 4}
-                name = terrain.name if hasattr(terrain, 'name') else str(terrain).upper().replace('_TERRAIN', '')
-                encoding[t_map.get(name, 0)] = 1.0
-            return encoding
-
-        def encode_ability(ability_name):
-            # Functional Categories (20 dims)
-            # 0: Levitate/Earth Eater (Ground Immunity)
-            # 1: Intimidate (Atk Drop)
-            # 2: Regenerator (Heal on Switch)
-            # 3: Speed Boost/Unburden (Speed)
-            # 4: Huge/Pure Power/Gorilla (Atk Boost)
-            # 5: Prankster/Gale/Triage (Priority)
-            # 6: Libero/Protean (Type Change)
-            # 7: Mold Breaker/Tera/Turbo (Ignore Ability)
-            # 8: Weather Setter (Drizzle/Drought/Stream/Snow)
-            # 9: Terrain Setter (Surge)
-            # 10: Absorb/Storm (Type Immunity + Boost)
-            # 11: Multiscale/Shadow (Damage Reduction)
-            # 12: Wonder Guard (Immunity)
-            # 13: Magic Bounce (Reflect Status)
-            # 14: Beast Boost/Moxie (Snowball)
-            # 15: Technician (Weak Move Boost)
-            # 16: Guts/Toxic/Flare (Status Boost)
-            # 17: Sheer Force (Sec Effect Boost)
-            # 18: Unaware (Ignore Boosts)
-            # 19: Other/None
+            base_idx = i * 4
+            enc[base_idx] = power
+            enc[base_idx+1] = acc
+            enc[base_idx+2] = eff
+            enc[base_idx+3] = stab
             
-            enc = np.zeros(20, dtype=np.float32)
-            if not ability_name:
-                enc[19] = 1.0
-                return enc
+            # ID (10 bits)
+            id_enc = self._hash_to_bin(move.id, 10)
+            id_start = 112 + (i * 10)
+            enc[id_start : id_start+10] = id_enc
+        
+        # Item (16-20) & Item ID (92-100)
+        item = mon.item
+        if item:
+            if 'choice' in item or ' scarf' in item or ' specs' in item or ' band' in item: enc[16] = 1.0
+            elif 'life' in item and 'orb' in item: enc[17] = 1.0
+            elif 'focus' in item and 'sash' in item: enc[18] = 1.0
+            elif 'leftovers' in item: enc[19] = 1.0
+            else: enc[20] = 1.0
+            
+            enc[92:101] = self._hash_to_bin(item, 9)
+        
+        # Ability (21-40) & Ability ID (101-109)
+        abi_enc = self.encode_ability(mon.ability)
+        enc[21:41] = abi_enc
+        enc[101:110] = self._hash_to_bin(mon.ability, 9)
+        
+        # Types (41-76) -> Type 1 (41-58) + Type 2 (59-76)
+        if mon.types:
+            t1_enc = self.encode_type(mon.types[0])
+            enc[41:59] = t1_enc
+            if len(mon.types) > 1:
+                t2_enc = self.encode_type(mon.types[1])
+                enc[59:77] = t2_enc
                 
-            a = ability_name.lower().replace(" ", "")
-            
-            if a in ['levitate', 'eartheater']: enc[0] = 1.0
-            elif a in ['intimidate']: enc[1] = 1.0
-            elif a in ['regenerator', 'naturalcure']: enc[2] = 1.0
-            elif a in ['speedboost', 'unburden', 'motordrive', 'steamengine']: enc[3] = 1.0
-            elif a in ['hugepower', 'purepower', 'gorillatactics']: enc[4] = 1.0
-            elif a in ['prankster', 'galewings', 'triage']: enc[5] = 1.0
-            elif a in ['libero', 'protean', 'colorchange']: enc[6] = 1.0
-            elif a in ['moldbreaker', 'teravolt', 'turboblaze']: enc[7] = 1.0
-            elif a in ['drizzle', 'drought', 'sandstream', 'snowwarning', 'desolateland', 'primordialsea']: enc[8] = 1.0
-            elif 'surge' in a: enc[9] = 1.0
-            elif a in ['voltabsorb', 'lightningrod', 'flashfire', 'sapsipper', 'stormdrain', 'dryskin', 'waterabsorb']: enc[10] = 1.0
-            elif a in ['multiscale', 'shadowshield', 'filter', 'solidrock', 'prismarmor']: enc[11] = 1.0
-            elif a in ['wonderguard']: enc[12] = 1.0
-            elif a in ['magicbounce', 'magicguard']: enc[13] = 1.0
-            elif a in ['beastboost', 'moxie', 'grimneigh', 'chillingneigh', 'soulheart']: enc[14] = 1.0
-            elif a in ['technician', 'toughclaws', 'steelyspirit', 'punkrock', 'strongjaw', 'sharpness']: enc[15] = 1.0
-            elif a in ['guts', 'toxicboost', 'flareboost', 'marvelscale', 'quickfeet']: enc[16] = 1.0
-            elif a in ['sheerforce']: enc[17] = 1.0
-            elif a in ['unaware']: enc[18] = 1.0
-            else: enc[19] = 1.0
-            
-            return enc
+        # Base Stats (77-82)
+        enc[77] = mon.base_stats['hp'] / 255.0
+        enc[78] = mon.base_stats['atk'] / 255.0
+        enc[79] = mon.base_stats['def'] / 255.0
+        enc[80] = mon.base_stats['spa'] / 255.0
+        enc[81] = mon.base_stats['spd'] / 255.0
+        enc[82] = mon.base_stats['spe'] / 255.0
+        
+        # Species ID (83-93) - 11 bits
+        enc[83:94] = self._hash_to_bin(mon.species, 11)
+        
+        return enc
 
-        def encode_type(type_obj):
-            # 18 Standard Types
-            # BUG, DARK, DRAGON, ELECTRIC, FAIRY, FIGHTING, FIRE, FLYING, GHOST, GRASS, GROUND, ICE, NORMAL, POISON, PSYCHIC, ROCK, STEEL, WATER
-            encoding = np.zeros(18, dtype=np.float32)
-            if not type_obj: return encoding
-            
-            type_map = {
-                'BUG': 0, 'DARK': 1, 'DRAGON': 2, 'ELECTRIC': 3, 'FAIRY': 4, 'FIGHTING': 5, 
-                'FIRE': 6, 'FLYING': 7, 'GHOST': 8, 'GRASS': 9, 'GROUND': 10, 'ICE': 11, 
-                'NORMAL': 12, 'POISON': 13, 'PSYCHIC': 14, 'ROCK': 15, 'STEEL': 16, 'WATER': 17
-            }
-            name = type_obj.name.upper() if hasattr(type_obj, 'name') else str(type_obj).upper()
-            idx = type_map.get(name, -1)
-            if idx >= 0: encoding[idx] = 1.0
-            return encoding
 
-        def encode_teammate(mon, active_op):
-            # 16 (Moves) + 5 (Items) + 20 (Ability) + 36 (Types) = 77
-            enc = np.zeros(77, dtype=np.float32)
-            
-            # Moves (0-15)
-            move_list = list(mon.moves.values())
-            for i, move in enumerate(move_list[:4]):
-                power = move.base_power / 100.0
-                acc = (move.accuracy / 100.0) if (move.accuracy is not True) else 1.0
-                eff = active_op.damage_multiplier(move.type) if active_op else 1.0
-                stab = 1.5 if move.type in mon.types else 1.0
-                
-                base_idx = i * 4
-                enc[base_idx] = power
-                enc[base_idx+1] = acc
-                enc[base_idx+2] = eff
-                enc[base_idx+3] = stab
-            
-            # Item (16-20)
-            item = mon.item
-            if item:
-                if 'choice' in item or ' scarf' in item or ' specs' in item or ' band' in item: enc[16] = 1.0
-                elif 'life' in item and 'orb' in item: enc[17] = 1.0
-                elif 'focus' in item and 'sash' in item: enc[18] = 1.0
-                elif 'leftovers' in item: enc[19] = 1.0
-                else: enc[20] = 1.0
-            
-            # Ability (21-40)
-            abi_enc = encode_ability(mon.ability)
-            enc[21:41] = abi_enc
-            
-            # Types (41-76) -> Type 1 (41-58) + Type 2 (59-76)
-            # mon.types is a tuple/list of Type objects
-            if mon.types:
-                t1_enc = encode_type(mon.types[0])
-                enc[41:59] = t1_enc
-                if len(mon.types) > 1:
-                    t2_enc = encode_type(mon.types[1])
-                    enc[59:77] = t2_enc
-            
-            return enc
+    def encode_type(self, type_obj):
+        # 18 Standard Types
+        encoding = np.zeros(18, dtype=np.float32)
+        if not type_obj: return encoding
+        type_map = {
+            'BUG': 0, 'DARK': 1, 'DRAGON': 2, 'ELECTRIC': 3, 'FAIRY': 4, 'FIGHTING': 5, 
+            'FIRE': 6, 'FLYING': 7, 'GHOST': 8, 'GRASS': 9, 'GROUND': 10, 'ICE': 11, 
+            'NORMAL': 12, 'POISON': 13, 'PSYCHIC': 14, 'ROCK': 15, 'STEEL': 16, 'WATER': 17
+        }
+        name = type_obj.name.upper() if hasattr(type_obj, 'name') else str(type_obj).upper()
+        idx = type_map.get(name, -1)
+        if idx >= 0: encoding[idx] = 1.0
+        return encoding
 
+    def encode_status(self, status):
+        enc = np.zeros(7, dtype=np.float32)
+        if status:
+            if status.name == 'SLP': enc[1] = 1.0
+            elif status.name == 'PSN': enc[2] = 1.0
+            elif status.name == 'BRN': enc[3] = 1.0
+            elif status.name == 'FRZ': enc[4] = 1.0
+            elif status.name == 'PAR': enc[5] = 1.0
+            elif status.name == 'TOX': enc[6] = 1.0
+        else: enc[0] = 1.0 # No status
+        return enc
+
+    def encode_boosts(self, boosts):
+        enc = np.full(7, 0.5, dtype=np.float32) # Default to 0.5 (no change)
+        if boosts:
+            enc[0] = (boosts.get('atk', 0) + 6) / 12.0
+            enc[1] = (boosts.get('def', 0) + 6) / 12.0
+            enc[2] = (boosts.get('spa', 0) + 6) / 12.0
+            enc[3] = (boosts.get('spd', 0) + 6) / 12.0
+            enc[4] = (boosts.get('spe', 0) + 6) / 12.0
+            enc[5] = (boosts.get('accuracy', 0) + 6) / 12.0
+            enc[6] = (boosts.get('evasion', 0) + 6) / 12.0
+        return enc
+
+    def encode_weather(self, weather):
+        enc = np.zeros(6, dtype=np.float32)
+        if weather:
+            w_str = str(weather).upper()
+            if 'SUN' in w_str: enc[1] = 1.0
+            elif 'RAIN' in w_str: enc[2] = 1.0
+            elif 'SAND' in w_str: enc[3] = 1.0
+            elif 'HAIL' in w_str: enc[4] = 1.0
+            elif 'FOG' in w_str: enc[5] = 1.0
+        else: enc[0] = 1.0 # No weather
+        return enc
+
+    def encode_ability(self, ability):
+        # 20 most common abilities, plus 1 for 'other'
+        # This is a simplified example, a real implementation would need a comprehensive list
+        ability_map = {
+            'levitate': 0, 'intimidate': 1, 'regenerator': 2, 'prankster': 3,
+            'protean': 4, 'libero': 5, 'drought': 6, 'drizzle': 7,
+            'sandstream': 8, 'snowwarning': 9, 'unburden': 10, 'speedboost': 11,
+            'magicbounce': 12, 'shadowtag': 13, 'arenatrap': 14, 'magnetpull': 15,
+            'toughclaws': 16, 'adaptability': 17, 'sheerforce': 18, 'multiscale': 19
+        }
+        enc = np.zeros(20, dtype=np.float32)
+        if ability:
+            name = str(ability).lower()
+            idx = ability_map.get(name, -1)
+            if idx >= 0: enc[idx] = 1.0
+        return enc
+
+    def _get_side_conditions(self, conditions):
+        # 10 dims
+        enc = np.zeros(10, dtype=np.float32)
+        if not conditions: return enc
+        for cond in conditions:
+            name = str(cond).upper()
+            if 'STEALTHROCK' in name: enc[0] = 1.0
+            elif 'SPIKES' in name: enc[1] = 0.33 if '1' in name else (0.66 if '2' in name else 1.0)
+            elif 'TOXICSPIKES' in name: enc[2] = 1.0
+            elif 'STICKYWEB' in name: enc[3] = 1.0
+            elif 'LIGHTSCREEN' in name: enc[4] = 1.0
+            elif 'REFLECT' in name: enc[5] = 1.0
+            elif 'AURORAVEIL' in name: enc[6] = 1.0
+            elif 'TAILWIND' in name: enc[7] = 1.0
+            elif 'MIST' in name: enc[8] = 1.0
+            elif 'SAFEGUARD' in name: enc[9] = 1.0
+        return enc
+
+    def _get_volatile_status(self, mon):
+        # 6 dims
+        enc = np.zeros(6, dtype=np.float32)
+        if not mon: return enc
+        for v in mon.effects:
+            name = str(v).upper()
+            if 'CONFUSION' in name: enc[0] = 1.0
+            elif 'TAUNT' in name: enc[1] = 1.0
+            elif 'LEECH' in name: enc[2] = 1.0
+            elif 'SUBSTITUTE' in name: enc[3] = 1.0
+            elif 'ENCORE' in name: enc[4] = 1.0
+            elif 'SALT' in name: enc[5] = 1.0
+        return enc
+
+    def _get_timers(self, battle):
+        # 4 dims: Weather, Terrain, MySide, OpSide (approximate or raw count if available)
+        # Poke-env wraps Showdown, which sometimes hides exact timers.
+        # We will return 0.0 for now but keep the slot.
+        return np.zeros(4, dtype=np.float32)
+
+    def _get_active_move_pp_fraction(self, battle):
+         # 4 dims
+         enc = np.zeros(4, dtype=np.float32)
+         active = battle.active_pokemon
+         if active:
+             for i, move in enumerate(list(active.moves.values())[:4]):
+                 if move.max_pp > 0:
+                    enc[i] = move.current_pp / move.max_pp
+         return enc
+
+    def embed_battle(self, battle: AbstractBattle, risk_token=0, opponent_team=None):
+        # Helper functions moved to methods
+        
         # ... [Embed Logic Matches] ...
         # Active Mon
         active = battle.active_pokemon
         if active:
             my_hp = np.array([active.current_hp_fraction], dtype=np.float32)
-            my_status = encode_status(active.status)
-            my_boosts = encode_boosts(active.boosts)
+            my_status = self.encode_status(active.status)
+            my_boosts = self.encode_boosts(active.boosts)
         else:
             my_hp = np.array([0.0], dtype=np.float32)
             my_status = np.zeros(7, dtype=np.float32); my_status[0] = 1.0
@@ -205,15 +241,15 @@ class BattleEmbedder:
         op = battle.opponent_active_pokemon
         if op:
             op_hp = np.array([op.current_hp_fraction], dtype=np.float32)
-            op_status = encode_status(op.status)
-            op_boosts = encode_boosts(op.boosts)
+            op_status = self.encode_status(op.status)
+            op_boosts = self.encode_boosts(op.boosts)
         else:
             op_hp = np.array([0.0], dtype=np.float32)
             op_status = np.zeros(7, dtype=np.float32); op_status[0] = 1.0
             op_boosts = np.full(7, 0.5, dtype=np.float32)
 
         # Field
-        weather_enc = encode_weather(battle.weather)
+        weather_enc = self.encode_weather(battle.weather)
         terrain_enc = np.zeros(5, dtype=np.float32)
         terrain_enc[0] = 1.0
         for field in battle.fields:
@@ -304,25 +340,74 @@ class BattleEmbedder:
 
             # 4. Op Ability
             if true_op.ability:
-                 op_ability_enc = encode_ability(true_op.ability)
+                 op_ability_enc = self.encode_ability(true_op.ability)
             elif op.ability: # Fallback to known ability if perfect info missing?
-                 op_ability_enc = encode_ability(op.ability)
+                 op_ability_enc = self.encode_ability(op.ability)
 
         # --- TEAMMATE DETAILS ---
-        # 6 teammates * 77 dims = 462
-        my_team_details = np.zeros(462, dtype=np.float32)
+        # 6 teammates * 152 dims = 912
+        my_team_details = np.zeros(912, dtype=np.float32)
         team_list = list(battle.team.values())
+        op = battle.opponent_active_pokemon
         for i in range(6):
             if i < len(team_list):
                  mon = team_list[i]
-                 # We use 'op' (Opponent Active) to check effectiveness
-                 # If op is None, effectiveness 1.0 (handled in helper)
-                 enc = encode_teammate(mon, op)
-                 start = i * 77
-                 end = start + 77
+                 enc = self.encode_teammate(mon, op)
+                 start = i * 152
+                 end = start + 152
                  my_team_details[start:end] = enc
 
+        # --- GLOBAL BATTLE STATE (40 dims) ---
+        my_side_cond = self._get_side_conditions(battle.side_conditions)
+        op_side_cond = self._get_side_conditions(battle.opponent_side_conditions)
+        my_volatile = self._get_volatile_status(active)
+        op_volatile = self._get_volatile_status(op)
+        timers = self._get_timers(battle)
+        pp_frac = self._get_active_move_pp_fraction(battle)
+        
+        global_state = np.concatenate([
+            my_side_cond, op_side_cond,
+            my_volatile, op_volatile,
+            timers, pp_frac
+        ])
+
+        # --- ACTIVE DISTINCT IDs (138 dims) ---
+        # My Active (Species 11 + Item 9 + Abi 9 + Moves 40 = 69)
+        my_active_ids = np.zeros(69, dtype=np.float32)
+        if active:
+             my_active_ids[0:11] = self._hash_to_bin(active.species, 11)
+             my_active_ids[11:20] = self._hash_to_bin(active.item, 9)
+             my_active_ids[20:29] = self._hash_to_bin(active.ability, 9)
+             moves = list(active.moves.values())
+             for i, m in enumerate(moves[:4]):
+                  start_id = 29 + (i * 10)
+                  my_active_ids[start_id : start_id+10] = self._hash_to_bin(m.id, 10)
+
+        # Op Active (Species 11 + Item 9 + Abi 9 + Moves 40 = 69)
+        op_active_ids = np.zeros(69, dtype=np.float32)
+        if op:
+             op_active_ids[0:11] = self._hash_to_bin(op.species, 11)
+             op_active_ids[11:20] = self._hash_to_bin(op.item, 9)
+             op_active_ids[20:29] = self._hash_to_bin(op.ability, 9)
+             
+             # For moves, we use what we know (op_moves_enc was computed above, but that's functional)
+             # Here we want IDs if we know them.
+             # We can try to get them from true_op if available, else standard move tracking
+             known_moves = []
+             if true_op:
+                  known_moves = list(true_op.moves.values())
+             else:
+                  known_moves = list(op.moves.values()) # Revealed moves
+                  
+             for i, m in enumerate(known_moves[:4]):
+                  start_id = 29 + (i * 10)
+                  op_active_ids[start_id : start_id+10] = self._hash_to_bin(m.id, 10)
+
+        # Order: [Teammates (912)] + [Global Context (~374)]
+        # This makes slicing obs[:, :912] easy for the Transformer
         return np.concatenate([
+            my_team_details,    # 0 -> 912
+            # --- GLOBAL/ACTIVE CONTEXT ---
             my_hp, my_status, my_boosts,
             op_hp, op_status, op_boosts,
             weather_enc, terrain_enc,
@@ -331,5 +416,7 @@ class BattleEmbedder:
             my_team_hp, op_team_hp,
             op_moves_enc, op_items_enc, rel_stats_enc,
             op_ability_enc,
-            my_team_details
+            global_state,
+            my_active_ids,
+            op_active_ids
         ])

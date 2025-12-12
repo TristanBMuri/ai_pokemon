@@ -5,10 +5,10 @@ def test_embedding_shape():
     embedder = BattleEmbedder()
     low, high, shape, dtype = embedder.describe_embedding()
     print(f"Embedding Shape: {shape}")
-    print(f"Expected: (583,)")
+    print(f"Expected: (1208,)")
     
-    assert shape == (583,), f"Shape mismatch! Got {shape}"
-    print("SUCCESS: Shape matches 583 (Full Team Info + Types + Abilities).")
+    assert shape == (1208,), f"Shape mismatch! Got {shape}"
+    print("SUCCESS: Shape matches 1208 (True Perfect Info + IDs).")
 
 if __name__ == "__main__":
     test_embedding_shape()

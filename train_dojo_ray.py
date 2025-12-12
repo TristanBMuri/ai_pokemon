@@ -11,8 +11,15 @@ os.environ["RAY_DEDUP_LOGS"] = "0" # Keep full logs for debugging
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
+from ray.rllib.models import ModelCatalog
 from ray.tune.registry import register_env
 from nuzlocke_gauntlet_rl.envs.threaded_ray_env import ThreadedBattleEnv
+
+# --- NEW: Import Transformer Model ---
+from models.ray_transformer import PokemonTransformerModel
+
+# Register Custom Model
+ModelCatalog.register_custom_model("pokemon_transformer", PokemonTransformerModel)
 from nuzlocke_gauntlet_rl.data.smogon import SmogonDataFetcher
 from nuzlocke_gauntlet_rl.players.heuristics import RadicalRedLogic, SimpleHeuristicsLogic
 from poke_env.player import Player
@@ -241,6 +248,21 @@ class MetricsCallback(DefaultCallbacks):
         if "opponent_radical_prob" in info:
              episode.custom_metrics["opponent_radical_prob"] = info["opponent_radical_prob"]
 
+    def on_train_result(self, *, algorithm, result, **kwargs):
+        # Log number of active (reporting) workers
+        # Ray Tune usually provides this in 'perf' stats
+        reporting = result.get("perf", {}).get("num_env_runners_reporting", 0)
+        
+        # Start initializing custom_metrics if missing (rare but possible)
+        if "custom_metrics" not in result:
+            result["custom_metrics"] = {}
+            
+        result["custom_metrics"]["active_workers_count"] = reporting
+        
+        # Also log configured workers for comparison
+        if hasattr(algorithm, "config"):
+             result["custom_metrics"]["configured_workers_count"] = algorithm.config.num_env_runners
+
 register_env("dojo_env", env_creator)
 
 if __name__ == "__main__":
@@ -291,19 +313,16 @@ if __name__ == "__main__":
         .resources(num_gpus=1)
         .training(
             model={
-                "use_lstm": True,
-                "lstm_cell_size": 512,  # SCALED UP for 583-dim input
-                "lstm_use_prev_action": True,
-                "lstm_use_prev_reward": True,
-                "fcnet_hiddens": [512, 512], # SCALED UP
-                "fcnet_activation": "relu",
+                "custom_model": "pokemon_transformer",
+                # "vf_share_layers": True, # Handled internally
             },
-            train_batch_size=2048, # 2048 total steps across 4 workers
-            minibatch_size=256,
-            num_epochs=5, # Renamed from num_sgd_iter as per warning
-            lr=5e-5,
             gamma=0.99,
-            entropy_coeff=0.01, # INCREASED ENTROPY to prevent policy collapse
+            lr=1e-4,
+            train_batch_size=8000, 
+            minibatch_size=512,
+            num_epochs=10,
+            entropy_coeff=0.01,
+            clip_param=0.2,
         )
         .framework("torch")
     )
