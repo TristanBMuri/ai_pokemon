@@ -119,6 +119,11 @@ To scale training massively, we use Ray RLlib with a "Dojo" setup where agents f
     - > 80% WR: **Radical Red AI** (Hard/Competitive, uses switch prediction and damage calc)
 - **Multi-Tier**: Trains on Gen 9 OU, Ubers, UU, RU, NU, PU, LC, and Gen 8-6 OU randomly.
 - **Memory Optimized**: Uses lightweight logic engines to support 30+ parallel workers on 64GB RAM.
+- **Full Team & Perfect Info Architecture**: Agent receives deep knowledge of the battle state:
+    - **Opponent**: Moves (Power/Acc/Eff), Items, Abilities, Relative Stats.
+    - **Teammates (NEW)**: Full visibility into the **Bench** (Moves, Items, Abilities, **Types**) for all 6 team members.
+    - **Smart Switching**: Actions 16-21 now reliably map to Team Slots 1-6, allowing precise team management.
+    - **Total**: **583 Input Features** (up from 121) processed by a **512-unit LSTM** model.
 
 ### Running the Dojo
 This script handles everything (server spawning, training, logging).
@@ -129,11 +134,14 @@ This script handles everything (server spawning, training, logging).
 uv run python train_dojo_ray.py
 ```
 
+**Note**: Checkpoints are saved to `models/ray_dojo_perfect_info`.
+**Important**: TensorBoard logs are now saved to a **clean directory** to avoid clutter: `~/ray_results_dojo/`.
+
 ### TensorBoard Metrics
-The Dojo logs detailed metrics under the `ray/tune` directory. Run:
+The Dojo logs detailed metrics. Run:
 
 ```bash
-uv run tensorboard --logdir ~/ray_results/
+uv run tensorboard --logdir ~/ray_results_dojo/
 ```
 
 **Key Metrics to Watch:**

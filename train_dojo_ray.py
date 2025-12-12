@@ -34,7 +34,7 @@ if __name__ == "__main__":
 # 1. PARALLEL WORKERS (Ray "num_env_runners")
 #    - How many separate python processes to spawn to run battles?
 #    - Recommendation: 20-25 (Safe), 35 (Aggressive - Risk of OOM).
-NUM_PARALLEL_WORKERS = 30
+NUM_PARALLEL_WORKERS = 25
 
 # 2. ENVS PER WORKER (Ray "num_envs_per_env_runner")
 #    - How many battles happen inside EACH worker process at the same time?
@@ -49,7 +49,7 @@ ENVS_PER_WORKER = 1 # Keep at 1. Scale NUM_PARALLEL_WORKERS instead.
 #    - Path to a checkpoint directory to resume training from.
 #    - Example: "/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo"
 #    - Set to None to start fresh.
-CHECKPOINT_PATH = "/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo"
+CHECKPOINT_PATH = "/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo_perfect_info"
 # ==============================================================================
 
 def env_creator(config):
@@ -292,9 +292,11 @@ if __name__ == "__main__":
         .training(
             model={
                 "use_lstm": True,
-                "lstm_cell_size": 128, # Compact model
-                "fcnet_hiddens": [128, 128],
-                "max_seq_len": 20,
+                "lstm_cell_size": 512,  # SCALED UP for 583-dim input
+                "lstm_use_prev_action": True,
+                "lstm_use_prev_reward": True,
+                "fcnet_hiddens": [512, 512], # SCALED UP
+                "fcnet_activation": "relu",
             },
             train_batch_size=2048, # 2048 total steps across 4 workers
             minibatch_size=256,
@@ -304,8 +306,20 @@ if __name__ == "__main__":
             entropy_coeff=0.01, # INCREASED ENTROPY to prevent policy collapse
         )
         .framework("torch")
-        .build()
     )
+    
+    # Custom Logger to save to a specific directory (cleaner than ~/ray_results)
+    from ray.tune.logger import UnifiedLogger
+    import datetime
+    
+    def custom_logger_creator(config):
+        # Create a unique subdir for this run
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        logdir = os.path.expanduser(f"~/ray_results_dojo/PPO_dojo_{timestamp}")
+        os.makedirs(logdir, exist_ok=True)
+        return UnifiedLogger(config, logdir)
+
+    algo = config.build(logger_creator=custom_logger_creator)
 
     if CHECKPOINT_PATH and os.path.exists(CHECKPOINT_PATH):
         print(f"Restoring checkpoint from {CHECKPOINT_PATH}...", flush=True)
@@ -335,13 +349,13 @@ if __name__ == "__main__":
                   f"dur={iter_dur:.2f}s total_steps={total_steps}", flush=True)
             
             if i % 5 == 0:
-                checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo")
+                checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo_perfect_info")
                 print(f"Saved checkpoint to {checkpoint_dir}", flush=True)
                 
     except KeyboardInterrupt:
         print("\nStopping training (Ctrl+C detected)...", flush=True)
         # Optional: Save a final checkpoint on exit
-        checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo")
+        checkpoint_dir = algo.save("/home/tristan/CodingProjects/ai_pokemon/models/ray_dojo_perfect_info")
         print(f"Saved final checkpoint to {checkpoint_dir}", flush=True)
         
     finally:

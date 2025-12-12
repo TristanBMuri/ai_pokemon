@@ -55,8 +55,16 @@ class BridgePlayer(Player):
         return reward
 
     async def choose_move(self, battle):
-        # 1. Embed State
-        obs = self.embedder.embed_battle(battle, risk_token=self.current_risk)
+        # 1. Embed State with Perfect Info
+        opponent_team_data = None
+        if hasattr(self, 'opponent') and self.opponent:
+            # Find the battle from opponent's perspective
+            # battle.battle_tag is shared? Usually yes.
+            op_battle = self.opponent.battles.get(battle.battle_tag)
+            if op_battle:
+                 opponent_team_data = op_battle.team # Perfect Info
+        
+        obs = self.embedder.embed_battle(battle, risk_token=self.current_risk, opponent_team=opponent_team_data)
         
         # 2. Calculate continuous reward/term/trunc
         reward = self.calc_reward(battle)
@@ -88,16 +96,45 @@ class BridgePlayer(Player):
         # We need the action space wrapper logic here or just raw mapping.
         # Using a simple fallback for now.
         
-        if battle.available_moves:
-             # Basic mapping: 0-3 moves, 4-9 switches
-             # This assumes action is an int
-             if action < 4 and len(battle.available_moves) > action:
-                 return self.create_order(battle.available_moves[action])
-             elif action < 4:
-                 return self.create_order(battle.available_moves[0]) # Fallback
-             else:
-                 return self.choose_random_move(battle)
+        if battle.available_moves and not battle.force_switch:
+             # Move Actions (0-15) - Standard poke-env mapping
+             # 0-3: Moves 1-4
+             # 4-7: Moves 1-4 + Mega (TODO)
+             # 8-11: Moves 1-4 + Z-Move (TODO)
+             # 12-15: Moves 1-4 + Dynamax/Tera (TODO)
+             if action < 16:
+                 move_idx = action % 4
+                 if move_idx < len(battle.available_moves):
+                     return self.create_order(battle.available_moves[move_idx])
+                 else:
+                     return self.choose_random_move(battle) # Fallback if move slot empty
         
+        if battle.available_switches or battle.force_switch:
+             # If action is switch (16-21) OR we are forced to switch (regardless of action)
+             if action >= 16:
+                 switch_idx = action - 16
+                 # SLOT-BASED SWITCHING (Stable Mapping)
+                 # Action 16 -> Team Slot 0
+                 # Action 17 -> Team Slot 1
+                 # ...
+                 # This aligns with the Embedding vector which iterates battle.team.values()
+                 
+                 team_list = list(battle.team.values())
+                 if switch_idx < len(team_list):
+                     target_mon = team_list[switch_idx]
+                     
+                     # Check if this specific mon is actually switchable
+                     if target_mon in battle.available_switches:
+                         return self.create_order(target_mon)
+                 
+                 # If target invalid (e.g. active, fainted, or doesn't exist):
+                 if battle.force_switch:
+                     return self.choose_random_move(battle) # Fallback to any valid switch
+             
+             # If we are forced to switch but chose a move (action < 16), we must switch
+             if battle.force_switch:
+                  return self.choose_random_move(battle)
+
         return self.choose_random_move(battle)
 
     def choose_random_move(self, battle):
