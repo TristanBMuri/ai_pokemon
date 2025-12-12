@@ -26,14 +26,15 @@ class BattleEmbedder:
     def describe_embedding(self):
         # Total dims detailed calculation:
         # Base (75) + Global (40) = 115
-        # Teammates (6 * 152) = 912
-        # where 152 = 77 (Old) + 6 (Stats) + 11 (Species) + 9 (Item) + 9 (Abi) + 40 (MoveIDs)
+        # Teammates (6 * 153) = 918   <-- UPDATED (added is_active)
+        # where 153 = 152 + 1 (is_active)
         # Active Perfect Info:
-        # Op Actions (Moves 16 + Items 5 + Stats 5 + Ability 20) -> 46
+        # Op Actions (46)
         # + Op Global (40) + Op Active IDs (69) + My Active IDs (69)
         # Grand Total:
-        # Team (912) + Basics (75) + PerfectInfo (46) + IDs (138) + Global (37) ~= 1208
-        dims = 1208
+        # Team (918) + Basics + PerfectInfo + IDs + Global ...
+        # Calculated Sum: 1214
+        dims = 1214
         return (
             np.zeros(dims, dtype=np.float32),
             np.ones(dims, dtype=np.float32),
@@ -43,12 +44,13 @@ class BattleEmbedder:
 
     # ... [Keep Helpers _get_active_move_pp_fraction etc from previous steps] ...
 
-    def encode_teammate(self, mon, active_op):
+    def encode_teammate(self, mon, active_op, is_active=False):
         # Base: 16 (Moves) + 5 (Items) + 20 (Ability) + 36 (Types) = 77
         # Stats: 6
         # IDs: 11 (Species) + 9 (Item) + 9 (Ability) + 40 (Moves) = 69
-        # Total: 77 + 6 + 69 = 152
-        enc = np.zeros(152, dtype=np.float32)
+        # Flags: 1 (is_active)
+        # Total: 77 + 6 + 69 + 1 = 153
+        enc = np.zeros(153, dtype=np.float32)
         
         # Moves (0-15) & Move IDs (From 112-151)
         move_list = list(mon.moves.values())
@@ -103,6 +105,10 @@ class BattleEmbedder:
         
         # Species ID (83-93) - 11 bits
         enc[83:94] = self._hash_to_bin(mon.species, 11)
+
+        # Active Flag (152)
+        if is_active:
+            enc[152] = 1.0
         
         return enc
 
@@ -345,16 +351,23 @@ class BattleEmbedder:
                  op_ability_enc = self.encode_ability(op.ability)
 
         # --- TEAMMATE DETAILS ---
-        # 6 teammates * 152 dims = 912
-        my_team_details = np.zeros(912, dtype=np.float32)
+        # 6 teammates * 153 dims = 918
+        my_team_details = np.zeros(918, dtype=np.float32)
         team_list = list(battle.team.values())
         op = battle.opponent_active_pokemon
+        # Identify active mon object logic
+        active_mon = battle.active_pokemon
+
         for i in range(6):
             if i < len(team_list):
                  mon = team_list[i]
-                 enc = self.encode_teammate(mon, op)
-                 start = i * 152
-                 end = start + 152
+                 # Check identity (pointer or species/name match?)
+                 # Poke-env objects are consistent.
+                 is_active = (mon == active_mon)
+                 
+                 enc = self.encode_teammate(mon, op, is_active=is_active)
+                 start = i * 153
+                 end = start + 153
                  my_team_details[start:end] = enc
 
         # --- GLOBAL BATTLE STATE (40 dims) ---
@@ -403,10 +416,10 @@ class BattleEmbedder:
                   start_id = 29 + (i * 10)
                   op_active_ids[start_id : start_id+10] = self._hash_to_bin(m.id, 10)
 
-        # Order: [Teammates (912)] + [Global Context (~374)]
-        # This makes slicing obs[:, :912] easy for the Transformer
+        # Order: [Teammates (918)] + [Global Context (~296)]
+        # This makes slicing obs[:, :918] easy for the Transformer
         return np.concatenate([
-            my_team_details,    # 0 -> 912
+            my_team_details,    # 0 -> 918
             # --- GLOBAL/ACTIVE CONTEXT ---
             my_hp, my_status, my_boosts,
             op_hp, op_status, op_boosts,
