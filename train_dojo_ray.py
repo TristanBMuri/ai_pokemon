@@ -41,7 +41,7 @@ if __name__ == "__main__":
 # 1. PARALLEL WORKERS (Ray "num_env_runners")
 #    - How many separate python processes to spawn to run battles?
 #    - Recommendation: 20-25 (Safe), 35 (Aggressive - Risk of OOM).
-NUM_PARALLEL_WORKERS = 25
+NUM_PARALLEL_WORKERS = 15
 
 # 2. ENVS PER WORKER (Ray "num_envs_per_env_runner")
 #    - How many battles happen inside EACH worker process at the same time?
