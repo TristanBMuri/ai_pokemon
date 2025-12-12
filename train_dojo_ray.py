@@ -272,7 +272,7 @@ if __name__ == "__main__":
         }
     )
     
-    algo = (
+    config = (
         PPOConfig()
         .environment(env="dojo_env", env_config={})
         .callbacks(MetricsCallback)
